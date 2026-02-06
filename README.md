@@ -1,6 +1,16 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+**GeniusEngine** – A prompt optimizer that turns raw ideas into expert-level prompts using 20 domain mindsets (Photo, Video, Marketing, Developer, etc.) and optional AI backends (Claude, GPT-4o mini).
 
 ## Getting Started
+
+### Environment & API keys
+
+1. Copy the example env file: `cp .env.example .env.local`
+2. Add at least one API key (or both):
+   - **OpenAI:** [API keys](https://platform.openai.com/api-keys) → set `OPENAI_API_KEY`
+   - **Anthropic:** [Console](https://console.anthropic.com/) → set `ANTHROPIC_API_KEY`
+3. In the app sidebar, choose **AI Provider** (Claude or GPT-4o mini). Generation will use the selected provider.
+
+### Run locally
 
 First, run the development server:
 
@@ -31,6 +41,9 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Push the project to GitHub.
+2. In [Vercel](https://vercel.com/new), import the repo and deploy.
+3. In the project **Settings → Environment Variables**, add:
+   - `OPENAI_API_KEY` (if using OpenAI)
+   - `ANTHROPIC_API_KEY` (if using Anthropic)
+4. Redeploy so the new env vars are applied.
