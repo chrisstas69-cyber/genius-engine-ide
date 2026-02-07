@@ -25,8 +25,11 @@ export interface SavedItem {
   score: number;
   content?: string;
   createdAt?: number;
+<<<<<<< HEAD
   tags?: string[];
   starred?: boolean;
+=======
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
 }
 
 export interface QuickTemplate {
@@ -35,6 +38,7 @@ export interface QuickTemplate {
   category: string;
 }
 
+<<<<<<< HEAD
 export interface PromptTemplate {
   id: string;
   name: string;
@@ -43,6 +47,8 @@ export interface PromptTemplate {
   prompt: string;
 }
 
+=======
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
 export type AppView = 'home' | 'input' | 'loading' | 'output' | 'library';
 
 export interface AppState {

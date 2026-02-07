@@ -45,6 +45,7 @@ export function removeSavedPrompt(id: number): void {
     // ignore
   }
 }
+<<<<<<< HEAD
 
 /** Update a saved prompt by id. */
 export function updateSavedPrompt(id: number, updates: Partial<Omit<SavedItem, 'id'>>): void {
@@ -108,3 +109,5 @@ export function exportPromptAsMarkdown(item: SavedItem): string {
   ];
   return lines.join('\n');
 }
+=======
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d

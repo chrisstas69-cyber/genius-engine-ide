@@ -1,5 +1,6 @@
 'use client';
 
+<<<<<<< HEAD
 import React, { useState, useRef, useEffect, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -55,6 +56,14 @@ function setModelStatusMap(next: Partial<Record<ChatModel, boolean>>) {
     // ignore
   }
 }
+=======
+import React, { useState, useRef, useEffect, Suspense } from 'react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { getSavedPrompts, addSavedPrompt } from '@/lib/savedPrompts';
+
+const PENDING_PROMPT_KEY = 'genius-engine-use-prompt';
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
 
 // ============================================
 // ALL 20 MINDSETS - EXPANDED (term, desc, optional group)
@@ -162,6 +171,7 @@ const mindsetsByCategory = categories.reduce((acc, cat) => {
 const CATEGORY_ORDER = ['Creative', 'Business', 'Technical', 'Professional', 'Content'] as const;
 
 type ChatModel = 'claude' | 'gpt4' | 'gemini' | 'perplexity';
+<<<<<<< HEAD
 
 const MODEL_CONFIG: Record<ChatModel, { label: string; icon: string; color: string; desc: string }> = {
   claude: { label: 'Claude Sonnet 4', icon: '🟣', color: '#818CF8', desc: 'Anthropic — creative & nuanced' },
@@ -170,6 +180,8 @@ const MODEL_CONFIG: Record<ChatModel, { label: string; icon: string; color: stri
   perplexity: { label: 'Perplexity', icon: '🔷', color: '#06B6D4', desc: 'Research-backed answers' },
 };
 
+=======
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
 const MODEL_LABELS: Record<ChatModel, string> = {
   claude: 'Claude Sonnet 4',
   gpt4: 'GPT-4',
@@ -179,6 +191,7 @@ const MODEL_LABELS: Record<ChatModel, string> = {
 
 type ConversationMessage = { role: 'user' | 'assistant'; content: string; model?: ChatModel };
 
+<<<<<<< HEAD
 type GoalKey = 'content' | 'data' | 'code' | 'business' | 'learn';
 
 const GOAL_OPTIONS: { key: GoalKey; label: string; icon: string }[] = [
@@ -723,6 +736,8 @@ function VaultPanel({ open, onClose, items, onUse }: {
   );
 }
 
+=======
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
 function GeniusEngineApp() {
   const searchParams = useSearchParams();
   const [inputText, setInputText] = useState('');
@@ -735,6 +750,7 @@ function GeniusEngineApp() {
   const [copied, setCopied] = useState(false);
   const [savedToLibrary, setSavedToLibrary] = useState(false);
   const [model, setModel] = useState<ChatModel>('claude');
+<<<<<<< HEAD
   const [modelStatus, setModelStatus] = useState<Partial<Record<ChatModel, boolean>>>({});
   const [error, setError] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -747,10 +763,16 @@ function GeniusEngineApp() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const exportFeedbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+=======
+  const [error, setError] = useState<string | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
 
   const currentMindset = selectedMindset ? mindsets[selectedMindset] : null;
 
   useEffect(() => {
+<<<<<<< HEAD
     const saved = getSavedPrompts();
     setSavedPromptCount(saved.length);
     setVaultItems(saved);
@@ -765,6 +787,9 @@ function GeniusEngineApp() {
     const savedModel = localStorage.getItem(MODEL_SELECTED_KEY) as ChatModel | null;
     if (savedModel && MODEL_CONFIG[savedModel]) setModel(savedModel);
     setModelStatus(getModelStatusMap());
+=======
+    setSavedPromptCount(getSavedPrompts().length);
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
   }, []);
 
   useEffect(() => {
@@ -815,13 +840,18 @@ function GeniusEngineApp() {
       score,
       content: lastAssistant.content,
     });
+<<<<<<< HEAD
     const updated = getSavedPrompts();
     setSavedPromptCount(updated.length);
     setVaultItems(updated);
+=======
+    setSavedPromptCount(getSavedPrompts().length);
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
     setSavedToLibrary(true);
     setTimeout(() => setSavedToLibrary(false), 2500);
   };
 
+<<<<<<< HEAD
   const refreshVault = useCallback(() => {
     const updated = getSavedPrompts();
     setSavedPromptCount(updated.length);
@@ -910,6 +940,8 @@ function GeniusEngineApp() {
     setTimeout(() => textareaRef.current?.focus(), 50);
   };
 
+=======
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [conversation]);
@@ -927,7 +959,10 @@ function GeniusEngineApp() {
     setInputText('');
     setError(null);
     setConversation(prev => [...prev, { role: 'user', content: userMessage }]);
+<<<<<<< HEAD
 
+=======
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
     setIsGenerating(true);
     const useStream = model === 'claude' || model === 'gpt4';
     const abortController = new AbortController();
@@ -954,10 +989,15 @@ function GeniusEngineApp() {
         const data = await res.json().catch(() => ({}));
         const errMsg = (data as { error?: string }).error || 'Generation failed';
         const isConfig = res.status === 503 && errMsg.includes('Configure');
+<<<<<<< HEAD
         updateModelStatus(model, false);
         throw new Error(isConfig ? `Configure API Key: ${errMsg}` : errMsg);
       }
       updateModelStatus(model, true);
+=======
+        throw new Error(isConfig ? `Configure API Key: ${errMsg}` : errMsg);
+      }
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
       if (useStream && res.body) {
         const contentType = res.headers.get('content-type') || '';
         if (contentType.includes('ndjson') || contentType.includes('stream')) {
@@ -994,7 +1034,10 @@ function GeniusEngineApp() {
                 }
                 if (parsed.done && parsed.model) {
                   doneModel = parsed.model;
+<<<<<<< HEAD
                   updateModelStatus(parsed.model, true);
+=======
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
                   resetStreamNoDataTimer();
                 }
               } catch {
@@ -1016,12 +1059,18 @@ function GeniusEngineApp() {
       const data = await res.json();
       const content = (data as { content?: string }).content ?? '';
       const returnedModel = (data as { model?: ChatModel }).model ?? model;
+<<<<<<< HEAD
       updateModelStatus(returnedModel, true);
+=======
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
       setConversation(prev => [...prev, { role: 'assistant', content, model: returnedModel }]);
     } catch (err) {
       clearTimeout(timeoutId);
       if (streamNoDataTimeoutId) clearTimeout(streamNoDataTimeoutId);
+<<<<<<< HEAD
       updateModelStatus(model, false);
+=======
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
       const isAbort = err instanceof Error && err.name === 'AbortError';
       const message = isAbort ? 'Request timed out. Try again or try another model.' : (err instanceof Error ? err.message : 'Generation failed');
       setError(message);
@@ -1059,14 +1108,20 @@ function GeniusEngineApp() {
     return text.split('\n').map((line, j) => {
       if (line.startsWith('**') && line.endsWith('**')) return <h3 key={j}>{line.replace(/\*\*/g, '')}</h3>;
       if (line.startsWith('- ')) return <li key={j}>{line.substring(2)}</li>;
+<<<<<<< HEAD
       if (line.startsWith('*') && line.endsWith('*')) return <p key={j} style={{ fontStyle: 'italic', color: '#94A3B8', marginTop: 16 }}>{line.replace(/\*/g, '')}</p>;
       if (line === '---') return <hr key={j} style={{ border: 'none', borderTop: '1px solid rgba(148, 163, 184, 0.08)', margin: '16px 0' }} />;
+=======
+      if (line.startsWith('*') && line.endsWith('*')) return <p key={j} style={{ fontStyle: 'italic', color: '#A0A0A0', marginTop: 16 }}>{line.replace(/\*/g, '')}</p>;
+      if (line === '---') return <hr key={j} style={{ border: 'none', borderTop: '1px solid #2A2A2A', margin: '16px 0' }} />;
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
       if (line.trim() === '') return <br key={j} />;
       return <p key={j}>{line}</p>;
     });
   }
 
   return (
+<<<<<<< HEAD
     <div className="app-container" style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif" }}>
 
       {/* Mobile hamburger button */}
@@ -1080,10 +1135,17 @@ function GeniusEngineApp() {
       <div className={`sidebar-backdrop ${sidebarOpen ? 'visible' : ''}`} onClick={() => setSidebarOpen(false)} />
 
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
+=======
+    <div className="app-container text-[#ECECEC]" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, sans-serif', background: '#343541' }}>
+      <style>{`@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }`}</style>
+
+      <aside className="sidebar">
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
         <div className="sidebar-header">
           <Link href="/" className="logo" style={{ textDecoration: 'none', color: 'inherit' }}>
             <span className="logo-icon">G</span>
             <span className="logo-text">GeniusEngine</span>
+<<<<<<< HEAD
             <svg className="sparkle-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ marginLeft: -4 }}>
               <path d="M8 0L9.5 6.5L16 8L9.5 9.5L8 16L6.5 9.5L0 8L6.5 6.5L8 0Z" fill="url(#sparkleGrad)" />
               <defs><linearGradient id="sparkleGrad" x1="0" y1="0" x2="16" y2="16"><stop stopColor="#818CF8" /><stop offset="1" stopColor="#EC4899" /></linearGradient></defs>
@@ -1095,6 +1157,12 @@ function GeniusEngineApp() {
           <button type="button" className="btn-guided-builder" onClick={() => { setBuilderOpen(true); setSidebarOpen(false); }}>
             ✨ Guided Builder
           </button>
+=======
+          </Link>
+          <button type="button" className="btn-new-prompt" onClick={startNew}>
+            <span>+</span> New prompt
+          </button>
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
         </div>
 
         <div className="sidebar-categories">
@@ -1106,7 +1174,11 @@ function GeniusEngineApp() {
               </button>
               <div className={`category-items ${expandedCategory === category ? '' : 'collapsed'}`} data-items={category.toLowerCase()}>
                 {mindsetsByCategory[category]?.map(([key, m]) => (
+<<<<<<< HEAD
                   <button key={key} type="button" className={`mindset-item ${selectedMindset === key ? 'active' : ''}`} data-mindset={key} onClick={() => { setSelectedMindset(key); setActiveTab('prompt'); setSidebarOpen(false); }}>
+=======
+                  <button key={key} type="button" className={`mindset-item ${selectedMindset === key ? 'active' : ''}`} data-mindset={key} onClick={() => { setSelectedMindset(key); setActiveTab('prompt'); }}>
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
                     <span className="icon">{m.icon}</span>{m.name}
                   </button>
                 ))}
@@ -1116,6 +1188,7 @@ function GeniusEngineApp() {
         </div>
 
         <div className="sidebar-footer">
+<<<<<<< HEAD
           <button type="button" className="library-vault-btn" onClick={() => { setTemplatesOpen(true); setSidebarOpen(false); }}>
             <span className="icon"><LayoutTemplate size={16} /></span>
             <span className="label">Templates</span>
@@ -1127,6 +1200,14 @@ function GeniusEngineApp() {
             <span className="badge">{savedPromptCount}</span>
           </button>
           <button type="button" className="library-vault-btn" style={{ marginTop: 4 }} onClick={() => { setActiveTab(activeTab === 'info' ? 'prompt' : 'info'); setSidebarOpen(false); }}>
+=======
+          <Link href="/library" className="library-vault-btn" style={{ textDecoration: 'none' }}>
+            <span className="icon">📚</span>
+            <span className="label">Library Vault</span>
+            <span className="badge">{savedPromptCount}</span>
+          </Link>
+          <button type="button" className="library-vault-btn" style={{ marginTop: 8 }} onClick={() => setActiveTab(activeTab === 'info' ? 'prompt' : 'info')}>
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
             <span className="icon">📖</span>
             <span className="label">{activeTab === 'info' ? 'Back to Prompt' : 'Information & Guide'}</span>
           </button>
@@ -1135,6 +1216,7 @@ function GeniusEngineApp() {
 
       <main className="main-content">
         {activeTab === 'info' ? (
+<<<<<<< HEAD
           <div className="content-body" style={{ padding: 32, maxWidth: 960, margin: '0 auto', flex: 1, overflowY: 'auto' }}>
             <h1 style={{ fontSize: 28, marginBottom: 24 }}>Information & Guide</h1>
 
@@ -1145,10 +1227,23 @@ function GeniusEngineApp() {
                 <li><strong style={{ color: '#F1F5F9' }}>Enter your prompt</strong> in the text area — describe what you want to create.</li>
                 <li><strong style={{ color: '#F1F5F9' }}>Generate</strong> to get an optimized, expert-level prompt.</li>
                 <li><strong style={{ color: '#F1F5F9' }}>Save to Library</strong> to keep prompts for later, or copy/export.</li>
+=======
+          <div className="content-body" style={{ padding: 32, maxWidth: 768, margin: '0 auto', flex: 1, overflowY: 'auto' }}>
+            <h1 style={{ fontSize: 28, marginBottom: 24 }}>Information & Guide</h1>
+
+            <section style={{ marginBottom: 32 }}>
+              <h2 style={{ fontSize: 20, marginBottom: 16, color: '#D97757' }}>How to use GeniusEngine</h2>
+              <ol style={{ paddingLeft: 24, lineHeight: 1.8, color: '#A0A0A0' }}>
+                <li><strong style={{ color: '#ECECEC' }}>Select a mindset</strong> from the sidebar (e.g. Photo, Marketing, Developer).</li>
+                <li><strong style={{ color: '#ECECEC' }}>Enter your prompt</strong> in the text area — describe what you want to create.</li>
+                <li><strong style={{ color: '#ECECEC' }}>Generate</strong> to get an optimized, expert-level prompt.</li>
+                <li><strong style={{ color: '#ECECEC' }}>Save to Library</strong> to keep prompts for later, or copy/export.</li>
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
               </ol>
             </section>
 
             <section style={{ marginBottom: 32 }}>
+<<<<<<< HEAD
               <h2 style={{ fontSize: 20, marginBottom: 16, color: '#818CF8' }}>Terminology dictionary</h2>
               <p style={{ color: '#94A3B8', marginBottom: 12 }}>All expert terms and their meanings by mindset. Go to:</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 20, alignItems: 'center' }}>
@@ -1156,6 +1251,15 @@ function GeniusEngineApp() {
                   <React.Fragment key={key}>
                     {i > 0 && <span style={{ color: '#64748B', margin: '0 2px' }}>|</span>}
                     <button type="button" onClick={() => { setActiveTab('prompt'); setSelectedMindset(key); }} style={{ background: 'none', border: 'none', color: '#818CF8', fontSize: 13, cursor: 'pointer', padding: 0 }}>{m.icon} {m.name}</button>
+=======
+              <h2 style={{ fontSize: 20, marginBottom: 16, color: '#D97757' }}>Terminology dictionary</h2>
+              <p style={{ color: '#A0A0A0', marginBottom: 12 }}>All expert terms and their meanings by mindset. Go to:</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 20, alignItems: 'center' }}>
+                {Object.entries(mindsets).map(([key, m], i) => (
+                  <React.Fragment key={key}>
+                    {i > 0 && <span style={{ color: '#5C5C5C', margin: '0 2px' }}>|</span>}
+                    <button type="button" onClick={() => { setActiveTab('prompt'); setSelectedMindset(key); }} style={{ background: 'none', border: 'none', color: '#D97757', fontSize: 13, cursor: 'pointer', padding: 0 }}>{m.icon} {m.name}</button>
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
                   </React.Fragment>
                 ))}
               </div>
@@ -1167,16 +1271,27 @@ function GeniusEngineApp() {
                   }, {} as Record<string, { term: string; desc: string; group?: string }[]>);
                   const hasGroups = Object.keys(byGroup).length > 1 || (Object.keys(byGroup)[0] && Object.keys(byGroup)[0] !== 'General');
                   return (
+<<<<<<< HEAD
                     <div key={key} id={`info-${key}`} style={{ background: 'rgba(30, 41, 59, 0.5)', border: '1px solid rgba(148, 163, 184, 0.08)', borderRadius: 16, padding: 24, scrollMarginTop: 24, backdropFilter: 'blur(16px)' }}>
+=======
+                    <div key={key} id={`info-${key}`} style={{ background: '#1A1A1A', border: '1px solid #2A2A2A', borderRadius: 12, padding: 20, scrollMarginTop: 24 }}>
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
                       <button type="button" onClick={() => { setActiveTab('prompt'); setSelectedMindset(key); }} style={{ background: 'none', border: 'none', color: 'inherit', fontSize: 18, marginBottom: 12, cursor: 'pointer', padding: 0, textAlign: 'left', width: '100%' }}>{m.icon} {m.name}</button>
                       {hasGroups ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                           {Object.entries(byGroup).map(([groupName, items]) => (
                             <div key={groupName}>
+<<<<<<< HEAD
                               <h4 style={{ fontSize: 14, color: '#94A3B8', marginBottom: 8, fontWeight: 600 }}>{groupName}</h4>
                               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                                 {items.map((s, i) => (
                                   <button key={i} type="button" title={s.desc} onClick={() => { setActiveTab('prompt'); setSelectedMindset(key); addTerm(s.term); }} style={{ background: 'rgba(30, 41, 59, 0.6)', padding: '6px 12px', borderRadius: 8, fontSize: 13, border: '1px solid rgba(148, 163, 184, 0.08)', color: '#F1F5F9', cursor: 'pointer', transition: 'all 200ms ease' }}>{s.term}: {s.desc}</button>
+=======
+                              <h4 style={{ fontSize: 14, color: '#A0A0A0', marginBottom: 8, fontWeight: 600 }}>{groupName}</h4>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                                {items.map((s, i) => (
+                                  <button key={i} type="button" title={s.desc} onClick={() => { setActiveTab('prompt'); setSelectedMindset(key); addTerm(s.term); }} style={{ background: '#2A2A2A', padding: '6px 12px', borderRadius: 8, fontSize: 13, border: 'none', color: '#ECECEC', cursor: 'pointer' }}>{s.term}: {s.desc}</button>
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
                                 ))}
                               </div>
                             </div>
@@ -1185,7 +1300,11 @@ function GeniusEngineApp() {
                       ) : (
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                           {m.suggestions.map((s, i) => (
+<<<<<<< HEAD
                             <button key={i} type="button" title={s.desc} onClick={() => { setActiveTab('prompt'); setSelectedMindset(key); addTerm(s.term); }} style={{ background: 'rgba(30, 41, 59, 0.6)', padding: '6px 12px', borderRadius: 8, fontSize: 13, border: '1px solid rgba(148, 163, 184, 0.08)', color: '#F1F5F9', cursor: 'pointer', transition: 'all 200ms ease' }}>{s.term}: {s.desc}</button>
+=======
+                            <button key={i} type="button" title={s.desc} onClick={() => { setActiveTab('prompt'); setSelectedMindset(key); addTerm(s.term); }} style={{ background: '#2A2A2A', padding: '6px 12px', borderRadius: 8, fontSize: 13, border: 'none', color: '#ECECEC', cursor: 'pointer' }}>{s.term}: {s.desc}</button>
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
                           ))}
                         </div>
                       )}
@@ -1196,6 +1315,7 @@ function GeniusEngineApp() {
             </section>
 
             <section style={{ marginBottom: 32 }}>
+<<<<<<< HEAD
               <h2 style={{ fontSize: 20, marginBottom: 16, color: '#818CF8' }}>Examples</h2>
               <div style={{ background: 'rgba(30, 41, 59, 0.5)', border: '1px solid rgba(148, 163, 184, 0.08)', borderRadius: 16, padding: 24, marginBottom: 16, backdropFilter: 'blur(16px)' }}>
                 <p style={{ color: '#94A3B8', fontSize: 12, marginBottom: 8 }}>Photo mindset — input:</p>
@@ -1208,6 +1328,20 @@ function GeniusEngineApp() {
                 <p style={{ color: '#F1F5F9', marginBottom: 12 }}>Email sequence for a product launch.</p>
                 <p style={{ color: '#94A3B8', fontSize: 12, marginBottom: 8 }}>You’ll get:</p>
                 <p style={{ color: '#F1F5F9' }}>Strategic overview, AIDA-style structure, CTAs, and implementation steps with best practices.</p>
+=======
+              <h2 style={{ fontSize: 20, marginBottom: 16, color: '#D97757' }}>Examples</h2>
+              <div style={{ background: '#1A1A1A', border: '1px solid #2A2A2A', borderRadius: 12, padding: 20, marginBottom: 16 }}>
+                <p style={{ color: '#A0A0A0', fontSize: 12, marginBottom: 8 }}>Photo mindset — input:</p>
+                <p style={{ color: '#ECECEC', marginBottom: 12 }}>Product shots for a skincare brand, natural light, minimal shadows.</p>
+                <p style={{ color: '#A0A0A0', fontSize: 12, marginBottom: 8 }}>You’ll get:</p>
+                <p style={{ color: '#ECECEC' }}>An optimized prompt with role, context, technical specs (e.g. aspect ratio, depth of field), composition notes, and a quality score.</p>
+              </div>
+              <div style={{ background: '#1A1A1A', border: '1px solid #2A2A2A', borderRadius: 12, padding: 20 }}>
+                <p style={{ color: '#A0A0A0', fontSize: 12, marginBottom: 8 }}>Marketing mindset — input:</p>
+                <p style={{ color: '#ECECEC', marginBottom: 12 }}>Email sequence for a product launch.</p>
+                <p style={{ color: '#A0A0A0', fontSize: 12, marginBottom: 8 }}>You’ll get:</p>
+                <p style={{ color: '#ECECEC' }}>Strategic overview, AIDA-style structure, CTAs, and implementation steps with best practices.</p>
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
               </div>
             </section>
           </div>
@@ -1217,6 +1351,7 @@ function GeniusEngineApp() {
               {conversation.length === 0 && !isGenerating ? (
                 <>
                   <div className="content-header">
+<<<<<<< HEAD
                     <div style={{ fontSize: 56, marginBottom: 20, filter: 'drop-shadow(0 4px 12px rgba(129, 140, 248, 0.25))' }}>{currentMindset ? currentMindset.icon : '✨'}</div>
                     <h1>What do you want to create?</h1>
                     <p className="subtitle">
@@ -1224,6 +1359,12 @@ function GeniusEngineApp() {
                         ? <>Using <span style={{ color: '#818CF8', fontWeight: 600 }}>{currentMindset.name}</span> mindset</>
                         : 'Select a mindset from the sidebar for smart suggestions'
                       }
+=======
+                    <div style={{ fontSize: 48, marginBottom: 16 }}>{currentMindset ? currentMindset.icon : '✨'}</div>
+                    <h1>What do you want to create?</h1>
+                    <p className="subtitle">
+                      {currentMindset ? `Using ${currentMindset.name} mindset` : 'Select a mindset for smart suggestions'}
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
                     </p>
                   </div>
                   {currentMindset && (
@@ -1233,7 +1374,11 @@ function GeniusEngineApp() {
                           <button key={i} type="button" className="suggestion-pill" onClick={() => addTerm(s.term)} title={s.desc}>{s.term}</button>
                         ))}
                       </div>
+<<<<<<< HEAD
                       <button type="button" onClick={() => setActiveTab('info')} style={{ background: 'transparent', border: 'none', color: '#64748B', fontSize: 12, cursor: 'pointer', padding: '4px 0', marginTop: 12, display: 'block', margin: '12px auto 0', width: 'fit-content', transition: 'color 200ms ease' }} onMouseEnter={e => (e.currentTarget.style.color = '#818CF8')} onMouseLeave={e => (e.currentTarget.style.color = '#64748B')}>View all terms in Information &amp; Guide →</button>
+=======
+                      <button type="button" onClick={() => setActiveTab('info')} style={{ background: 'transparent', border: 'none', color: '#8E8EA0', fontSize: 12, textDecoration: 'underline', cursor: 'pointer', padding: '4px 0', marginTop: 8, display: 'block', margin: '0 auto', width: 'fit-content' }}>View all in Information &amp; Guide</button>
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
                     </div>
                   )}
                 </>
@@ -1242,6 +1387,7 @@ function GeniusEngineApp() {
                   {conversation.length > 0 && (
                     <>
                       {conversation.slice(0, conversation[conversation.length - 1]?.role === 'assistant' ? conversation.length - 1 : conversation.length).map((msg, i) => (
+<<<<<<< HEAD
                         <div key={i} style={{ display: 'flex', gap: 16, marginBottom: 28, padding: '16px 20px', borderRadius: 14, background: msg.role === 'user' ? 'transparent' : 'rgba(30, 41, 59, 0.3)', transition: 'background 200ms ease' }}>
                           <div style={{ width: 34, height: 34, borderRadius: msg.role === 'user' ? '50%' : 10, background: msg.role === 'user' ? 'linear-gradient(135deg, #818CF8, #EC4899)' : '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 13, fontWeight: 700, flexShrink: 0, boxShadow: msg.role === 'user' ? '0 2px 8px rgba(129,140,248,0.3)' : '0 2px 8px rgba(16,185,129,0.3)' }}>{msg.role === 'user' ? 'U' : 'G'}</div>
                           <div style={{ flex: 1, minWidth: 0, fontSize: 15, lineHeight: 1.7 }}>
@@ -1255,13 +1401,37 @@ function GeniusEngineApp() {
                                     <span style={{ fontSize: 12 }}>{MODEL_CONFIG[msg.model].icon}</span>
                                     {MODEL_LABELS[msg.model]}
                                   </span>
+=======
+                        <div key={i} style={{ display: 'flex', gap: 16, marginBottom: 24 }}>
+                          <div style={{ width: 32, height: 32, borderRadius: msg.role === 'user' ? '50%' : 8, background: msg.role === 'user' ? '#D97757' : '#10A37F', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 13, fontWeight: 600, flexShrink: 0 }}>{msg.role === 'user' ? 'U' : 'G'}</div>
+                          <div style={{ flex: 1, minWidth: 0, fontSize: 15, lineHeight: 1.6 }}>
+                            {msg.role === 'user' ? (
+                              <p style={{ color: '#ECECEC', whiteSpace: 'pre-wrap', wordBreak: 'break-word', margin: 0 }}>{msg.content}</p>
+                            ) : (
+                              <>
+                                <div style={{ color: '#ECECEC', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{formatOutputContent(msg.content)}</div>
+                                {msg.model != null && (
+                                  <span style={{ display: 'inline-block', marginTop: 8, fontSize: 11, color: '#8E8EA0' }}>{MODEL_LABELS[msg.model]}</span>
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
                                 )}
                               </>
                             )}
                           </div>
                         </div>
                       ))}
+<<<<<<< HEAD
                       {isGenerating && <SkeletonLoader />}
+=======
+                      {isGenerating && (
+                        <div style={{ display: 'flex', gap: 16, marginBottom: 24 }}>
+                          <div style={{ width: 32, height: 32, borderRadius: 8, background: '#10A37F', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 13, fontWeight: 600, flexShrink: 0 }}>G</div>
+                          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8, color: '#8E8EA0', fontSize: 15 }}>
+                            <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#D97757', animation: 'pulse 1.5s infinite' }} />
+                            Generating...
+                          </div>
+                        </div>
+                      )}
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
                       <div ref={messagesEndRef} />
                     </>
                   )}
@@ -1269,6 +1439,7 @@ function GeniusEngineApp() {
                   {lastAssistantMessage && (
                     <div className="output-section" style={{ marginTop: 8 }}>
                       <div className="output-container">
+<<<<<<< HEAD
                         <div className="quality-score">
                           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1L8.8 4.6L13 5.2L10 8.1L10.6 13L7 11L3.4 13L4 8.1L1 5.2L5.2 4.6L7 1Z" fill="#10B981"/></svg>
                           {qualityScore ? `${qualityScore}/100` : '—'}
@@ -1300,6 +1471,10 @@ function GeniusEngineApp() {
                           </div>
                           {exportFeedback && <div className="export-feedback">{exportFeedback}</div>}
                         </div>
+=======
+                        <div className="quality-score">{qualityScore ? `${qualityScore}/100` : '—'}</div>
+                        <div className="output-box">{formatOutputContent(lastAssistantMessage.content)}</div>
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
                         <div className="action-buttons">
                           <div className="action-buttons-left">
                             <button type="button" className="btn-action btn-secondary" onClick={handleCopyOutput}>{copied ? 'Copied!' : 'Copy'}</button>
@@ -1307,7 +1482,21 @@ function GeniusEngineApp() {
                             <button type="button" className="btn-action btn-primary" onClick={() => { setConversation(prev => prev.slice(0, -1)); setInputText(conversation[conversation.length - 2]?.content ?? ''); }}>Regenerate</button>
                           </div>
                           <div className="action-buttons-right">
+<<<<<<< HEAD
                             <ModelSelector value={model} onChange={handleModelChange} compact statusMap={modelStatus} />
+=======
+                            <select
+                              value={model}
+                              onChange={e => setModel(e.target.value as ChatModel)}
+                              className="model-select-compact"
+                              aria-label="Model"
+                            >
+                              <option value="claude">Claude Sonnet 4</option>
+                              <option value="gpt4">GPT-4</option>
+                              <option value="gemini">Gemini Pro</option>
+                              <option value="perplexity">Perplexity</option>
+                            </select>
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
                             <button type="button" className="btn-action btn-primary" onClick={startNew}>
                               <span>+</span> New prompt
                             </button>
@@ -1332,7 +1521,21 @@ function GeniusEngineApp() {
                 </div>
               ) : (
                 <div className="input-bar-row">
+<<<<<<< HEAD
                   <ModelSelector value={model} onChange={handleModelChange} statusMap={modelStatus} />
+=======
+                  <select
+                    value={model}
+                    onChange={e => setModel(e.target.value as ChatModel)}
+                    className="model-select-inline"
+                    aria-label="Model"
+                  >
+                    <option value="claude">Claude Sonnet 4</option>
+                    <option value="gpt4">GPT-4</option>
+                    <option value="gemini">Gemini Pro</option>
+                    <option value="perplexity">Perplexity</option>
+                  </select>
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
                   <div className="input-container">
                     <div style={{ position: 'relative' }}>
                       <textarea ref={textareaRef} className="input-box" value={inputText} onChange={e => setInputText(e.target.value)} onKeyDown={handleKeyDown} placeholder={currentMindset ? `Describe your ${currentMindset.name.toLowerCase()} project...` : 'What do you want to create?'} rows={1} style={{ paddingRight: 52 }} />
@@ -1347,6 +1550,7 @@ function GeniusEngineApp() {
           </>
         )}
       </main>
+<<<<<<< HEAD
 
       <VaultPanel
         open={vaultOpen}
@@ -1372,13 +1576,19 @@ function GeniusEngineApp() {
         onClose={() => setBuilderOpen(false)}
         onGenerate={handleBuilderGenerate}
       />
+=======
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
     </div>
   );
 }
 
 export default function AppPage() {
   return (
+<<<<<<< HEAD
     <Suspense fallback={<div style={{ minHeight: '100vh', background: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8' }}>Loading...</div>}>
+=======
+    <Suspense fallback={<div style={{ minHeight: '100vh', background: '#343541', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8E8EA0' }}>Loading...</div>}>
+>>>>>>> bd96a7fcc085d5571fb240769e6fb0a4c515ea7d
       <GeniusEngineApp />
     </Suspense>
   );
