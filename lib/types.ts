@@ -25,12 +25,22 @@ export interface SavedItem {
   score: number;
   content?: string;
   createdAt?: number;
+  tags?: string[];
+  starred?: boolean;
 }
 
 export interface QuickTemplate {
   id: number;
   name: string;
   category: string;
+}
+
+export interface PromptTemplate {
+  id: string;
+  name: string;
+  description: string;
+  mindset: string;
+  prompt: string;
 }
 
 export type AppView = 'home' | 'input' | 'loading' | 'output' | 'library';

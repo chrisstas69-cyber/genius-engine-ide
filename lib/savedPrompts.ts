@@ -45,3 +45,66 @@ export function removeSavedPrompt(id: number): void {
     // ignore
   }
 }
+
+/** Update a saved prompt by id. */
+export function updateSavedPrompt(id: number, updates: Partial<Omit<SavedItem, 'id'>>): void {
+  const list = getStored();
+  const idx = list.findIndex((s) => s.id === id);
+  if (idx === -1) return;
+  list[idx] = { ...list[idx], ...updates };
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  } catch {
+    // ignore
+  }
+}
+
+/** Duplicate a saved prompt, returning the new id. */
+export function duplicateSavedPrompt(id: number): number | null {
+  const list = getStored();
+  const source = list.find((s) => s.id === id);
+  if (!source) return null;
+  const nextId = Math.max(0, ...list.map((s) => s.id)) + 1;
+  const dup: SavedItem = {
+    ...source,
+    id: nextId,
+    name: `${source.name} (copy)`,
+    createdAt: Date.now(),
+  };
+  list.push(dup);
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  } catch {
+    // ignore
+  }
+  return nextId;
+}
+
+/** Toggle starred status on a saved prompt. */
+export function toggleStarredPrompt(id: number): void {
+  const list = getStored();
+  const idx = list.findIndex((s) => s.id === id);
+  if (idx === -1) return;
+  list[idx] = { ...list[idx], starred: !list[idx].starred };
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  } catch {
+    // ignore
+  }
+}
+
+/** Export a saved prompt as markdown text. */
+export function exportPromptAsMarkdown(item: SavedItem): string {
+  const lines = [
+    `# ${item.name}`,
+    '',
+    `**Mindset:** ${item.mindset}`,
+    `**Score:** ${item.score}/100`,
+    `**Date:** ${item.date}`,
+    '',
+    '---',
+    '',
+    item.content || '_No content_',
+  ];
+  return lines.join('\n');
+}
