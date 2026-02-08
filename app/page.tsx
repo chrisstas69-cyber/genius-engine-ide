@@ -151,6 +151,9 @@ const mindsets: Record<string, {
     { term: 'Subject line', desc: 'Email title/hook' }, { term: 'Open rate', desc: 'Percentage who opened' }, { term: 'Drip campaign', desc: 'Automated email sequence' }, { term: 'Segmentation', desc: 'Audience grouping' }, { term: 'Personalization', desc: 'Customized content' }, { term: 'Click-through rate', desc: 'Link click percentage' }, { term: 'Welcome series', desc: 'New subscriber emails' }, { term: 'Deliverability', desc: 'Inbox placement rate' },
     { term: 'Preheader', desc: 'Preview text next to subject line' }, { term: 'A/B test', desc: 'Testing subject or copy variants' }, { term: 'Unsubscribe rate', desc: 'Percentage who opt out' }, { term: 'List hygiene', desc: 'Removing bounces and inactive addresses' }, { term: 'Transactional email', desc: 'Receipts, password reset, etc.' }, { term: 'Double opt-in', desc: 'Confirm subscription via second email' }, { term: 'Spam score', desc: 'Likelihood of being filtered' }, { term: 'Sender reputation', desc: 'Domain trust affecting deliverability' },
   ]},
+  education: { name: 'Education', icon: '📚', category: 'Professional', suggestions: [
+    { term: 'Learning objective', desc: 'Goal statement' }, { term: 'Curriculum', desc: 'Course structure' }, { term: 'Assessment', desc: 'Knowledge evaluation' }, { term: 'Rubric', desc: 'Grading criteria' }, { term: 'Differentiation', desc: 'Varied instruction' }, { term: 'Scaffolding', desc: 'Gradual skill building' }, { term: 'Formative', desc: 'Ongoing assessment' }, { term: 'Summative', desc: 'Final evaluation' }, { term: 'Engagement', desc: 'Student participation' }, { term: "Bloom's taxonomy", desc: 'Cognitive levels' },
+  ]},
 };
 
 const categories = ['Creative', 'Business', 'Technical', 'Professional', 'Content'];
@@ -227,6 +230,18 @@ const MINDSET_PLACEHOLDERS: Record<string, { context: string; task: string; hint
     task: 'Create a checklist to assess application security.',
     hints: ['System type', 'Compliance requirements', 'Risk areas'],
     examples: ['Security audit checklist', 'Incident response plan'],
+  },
+  education: {
+    context: 'I am designing a course for [audience] on [topic]...',
+    task: 'Create learning objectives and a lesson outline with activities.',
+    hints: ['Audience level', 'Topic scope', 'Delivery format'],
+    examples: ['Write a lesson plan with objectives', 'Create a study guide for an exam'],
+  },
+  scientific: {
+    context: 'We are researching [topic] with [methods]...',
+    task: 'Summarize the literature and suggest a methodology.',
+    hints: ['Research question', 'Constraints', 'Expected output'],
+    examples: ['Literature review outline', 'Methodology section draft'],
   },
 };
 
@@ -320,39 +335,32 @@ function ModelSelector({
                   transition: 'all 150ms ease',
                   textAlign: 'left',
                   opacity: available ? 1 : 0.6,
-                  boxShadow: isActive ? `0 0 0 1px ${m.color}55` : 'none',
                 }}
-                onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'rgba(148, 163, 184, 0.06)'; }}
+                onMouseEnter={e => { if (available && !isActive) (e.currentTarget as HTMLElement).style.background = 'rgba(148, 163, 184, 0.08)'; }}
                 onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
               >
-                <span style={{
-                  width: 24,
-                  height: 24,
-                  borderRadius: '50%',
-                  background: m.color,
-                  color: '#0F172A',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 11,
-                  fontWeight: 700,
-                }}>{ui.short}</span>
+                <span
+                  className="model-option-icon-circle"
+                  style={{ background: m.color }}
+                >
+                  {ui.short}
+                </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ color: isActive ? m.color : '#F1F5F9', fontWeight: 600, fontSize: 14 }}>{m.label}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                    <span style={{ color: isActive ? m.color : '#F1F5F9', fontWeight: 600, fontSize: 14 }}>{m.label}</span>
+                    {key === 'claude' && <span className="model-recommended-badge">Recommended</span>}
+                  </div>
                   <div style={{ color: '#64748B', fontSize: 12, marginTop: 1 }}>{ui.company}</div>
                   <div style={{ color: available ? '#10B981' : '#94A3B8', fontSize: 11, marginTop: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: available ? '#10B981' : '#64748B' }} />
+                    <span className="model-status-dot" style={{ background: available ? '#10B981' : '#64748B' }} />
                     {statusText}
-                    {!available && <span style={{ color: '#818CF8', textDecoration: 'underline' }}>Configure</span>}
+                    {!available && <span className="model-configure-hint">Configure</span>}
                   </div>
                 </div>
                 {isActive && (
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="model-check">
                     <path d="M3 7L6 10L11 4" stroke={m.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                )}
-                {key === 'claude' && (
-                  <span className="model-recommended">(Recommended)</span>
                 )}
               </button>
             );
