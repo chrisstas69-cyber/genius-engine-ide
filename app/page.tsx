@@ -781,7 +781,15 @@ function GeniusEngineApp() {
     if (typeof window === 'undefined') return;
     const savedModel = localStorage.getItem(MODEL_SELECTED_KEY) as ChatModel | null;
     if (savedModel && MODEL_CONFIG[savedModel]) setModel(savedModel);
-    setModelStatus(getModelStatusMap());
+    // Only keep status for current valid models — clear stale/failed entries
+    const raw = getModelStatusMap();
+    const cleaned: Partial<Record<ChatModel, boolean>> = {};
+    (Object.keys(MODEL_CONFIG) as ChatModel[]).forEach(k => {
+      if (raw[k] === true) cleaned[k] = true;
+      // Don't carry over false — let models be retried fresh each session
+    });
+    setModelStatus(cleaned);
+    setModelStatusMap(cleaned);
   }, []);
 
   useEffect(() => {
