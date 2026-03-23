@@ -5,8 +5,12 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { getSavedPrompts, addSavedPrompt } from '@/lib/savedPrompts';
 import { PROMPT_TEMPLATES } from '@/lib/templates';
-import type { PromptTemplate } from '@/lib/types';
-import { LayoutTemplate, X, Search } from 'lucide-react';
+import type { PromptTemplate, Skill } from '@/lib/types';
+import { getCustomSkills } from '@/lib/savedSkills';
+import { addCustomSkill } from '@/lib/savedSkills';
+import SkillsPanel from '@/components/SkillsPanel';
+import SkillChips from '@/components/SkillChips';
+import { LayoutTemplate, X, Search, Sparkles } from 'lucide-react';
 
 const PENDING_PROMPT_KEY = 'genius-engine-use-prompt';
 const USER_TEMPLATES_KEY = 'genius-engine-user-templates';
@@ -282,10 +286,10 @@ function ModelSelector({
         style={{
           display: 'flex', alignItems: 'center', gap: 8,
           padding: compact ? '8px 12px' : '10px 14px',
-          background: 'rgba(30, 41, 59, 0.6)',
-          border: `1px solid ${open ? 'rgba(129, 140, 248, 0.4)' : 'rgba(148, 163, 184, 0.1)'}`,
+          background: 'rgba(17, 18, 24, 0.7)',
+          border: `1px solid ${open ? 'rgba(129, 140, 248, 0.4)' : 'rgba(255, 255, 255, 0.08)'}`,
           borderRadius: 12, cursor: 'pointer',
-          color: '#F1F5F9', fontSize: compact ? 13 : 14, fontWeight: 500,
+          color: '#FFFFFF', fontSize: compact ? 13 : 14, fontWeight: 500,
           transition: 'all 200ms ease',
           minWidth: compact ? 150 : 170,
         }}
@@ -295,7 +299,7 @@ function ModelSelector({
           height: compact ? 20 : 22,
           borderRadius: '50%',
           background: current.color,
-          color: '#0F172A',
+          color: '#0a0b14',
           display: 'inline-flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -311,7 +315,7 @@ function ModelSelector({
         <div className="model-dropdown" style={{
           position: 'absolute', bottom: '100%', left: 0, marginBottom: 6,
           background: 'rgba(30, 41, 59, 0.95)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(148, 163, 184, 0.12)', borderRadius: 14,
+          border: '1px solid rgba(255, 255, 255, 0.10)', borderRadius: 14,
           padding: 6, minWidth: 240, zIndex: 100,
           boxShadow: '0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(148,163,184,0.06)',
         }}>
@@ -336,7 +340,7 @@ function ModelSelector({
                   textAlign: 'left',
                   opacity: available ? 1 : 0.6,
                 }}
-                onMouseEnter={e => { if (available && !isActive) (e.currentTarget as HTMLElement).style.background = 'rgba(148, 163, 184, 0.08)'; }}
+                onMouseEnter={e => { if (available && !isActive) (e.currentTarget as HTMLElement).style.background = 'rgba(255, 255, 255, 0.06)'; }}
                 onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
               >
                 <span
@@ -347,12 +351,12 @@ function ModelSelector({
                 </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                    <span style={{ color: isActive ? m.color : '#F1F5F9', fontWeight: 600, fontSize: 14 }}>{m.label}</span>
+                    <span style={{ color: isActive ? m.color : '#FFFFFF', fontWeight: 600, fontSize: 14 }}>{m.label}</span>
                     {key === 'claude' && <span className="model-recommended-badge">Recommended</span>}
                   </div>
-                  <div style={{ color: '#64748B', fontSize: 12, marginTop: 1 }}>{ui.company}</div>
-                  <div style={{ color: available ? '#10B981' : '#94A3B8', fontSize: 11, marginTop: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span className="model-status-dot" style={{ background: available ? '#10B981' : '#64748B' }} />
+                  <div style={{ color: '#6b6f80', fontSize: 12, marginTop: 1 }}>{ui.company}</div>
+                  <div style={{ color: available ? '#10B981' : '#a0a4b8', fontSize: 11, marginTop: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span className="model-status-dot" style={{ background: available ? '#10B981' : '#6b6f80' }} />
                     {statusText}
                     {!available && <span className="model-configure-hint">Configure</span>}
                   </div>
@@ -388,14 +392,14 @@ function SkeletonLoader() {
     <div style={{ display: 'flex', gap: 16, marginBottom: 24, padding: '16px 20px', borderRadius: 14, background: 'rgba(30, 41, 59, 0.3)' }}>
       <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(129, 140, 248, 0.2)', flexShrink: 0, animation: 'pulse 1.5s infinite' }} />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' as const, gap: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#94A3B8', fontSize: 14, marginBottom: 4 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#a0a4b8', fontSize: 14, marginBottom: 4 }}>
           <BounceDots />
           <span style={{ marginLeft: 4 }}>Generating...</span>
         </div>
-        <div style={{ height: 14, width: '85%', borderRadius: 8, background: 'rgba(30, 41, 59, 0.6)', animation: 'pulse 1.5s infinite ease-in-out' }} />
-        <div style={{ height: 14, width: '70%', borderRadius: 8, background: 'rgba(30, 41, 59, 0.6)', animation: 'pulse 1.5s infinite ease-in-out', animationDelay: '0.15s' }} />
-        <div style={{ height: 14, width: '92%', borderRadius: 8, background: 'rgba(30, 41, 59, 0.6)', animation: 'pulse 1.5s infinite ease-in-out', animationDelay: '0.3s' }} />
-        <div style={{ height: 14, width: '60%', borderRadius: 8, background: 'rgba(30, 41, 59, 0.6)', animation: 'pulse 1.5s infinite ease-in-out', animationDelay: '0.45s' }} />
+        <div style={{ height: 14, width: '85%', borderRadius: 8, background: 'rgba(17, 18, 24, 0.7)', animation: 'pulse 1.5s infinite ease-in-out' }} />
+        <div style={{ height: 14, width: '70%', borderRadius: 8, background: 'rgba(17, 18, 24, 0.7)', animation: 'pulse 1.5s infinite ease-in-out', animationDelay: '0.15s' }} />
+        <div style={{ height: 14, width: '92%', borderRadius: 8, background: 'rgba(17, 18, 24, 0.7)', animation: 'pulse 1.5s infinite ease-in-out', animationDelay: '0.3s' }} />
+        <div style={{ height: 14, width: '60%', borderRadius: 8, background: 'rgba(17, 18, 24, 0.7)', animation: 'pulse 1.5s infinite ease-in-out', animationDelay: '0.45s' }} />
       </div>
     </div>
   );
@@ -434,7 +438,7 @@ function TemplatesPanel({ open, onClose, onUse, currentMindset, templates }: {
         </div>
         <div className="templates-search">
           <div style={{ position: 'relative' }}>
-            <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#64748B' }} />
+            <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#6b6f80' }} />
             <input type="text" placeholder="Search templates..." value={search} onChange={e => setSearch(e.target.value)} />
           </div>
         </div>
@@ -447,7 +451,7 @@ function TemplatesPanel({ open, onClose, onUse, currentMindset, templates }: {
         </div>
         <div className="templates-body">
           {filtered.length === 0 && (
-            <div style={{ textAlign: 'center', padding: '48px 0', color: '#64748B' }}>
+            <div style={{ textAlign: 'center', padding: '48px 0', color: '#6b6f80' }}>
               <LayoutTemplate size={32} style={{ marginBottom: 12, opacity: 0.5 }} />
               <p>No templates match your search.</p>
             </div>
@@ -688,7 +692,7 @@ function VaultPanel({ open, onClose, items, onUse }: {
         </div>
         <div className="library-vault-panel-body">
           {items.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '48px 0', color: '#64748B' }}>
+            <div style={{ textAlign: 'center', padding: '48px 0', color: '#6b6f80' }}>
               <div style={{ fontSize: 32, marginBottom: 12 }}>📚</div>
               <p>No saved prompts yet.</p>
               <p style={{ fontSize: 12, marginTop: 4 }}>Generate a prompt and save it to see it here.</p>
@@ -699,16 +703,16 @@ function VaultPanel({ open, onClose, items, onUse }: {
                 const m = mindsets[item.mindset];
                 return (
                   <div key={item.id} style={{
-                    background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(148, 163, 184, 0.06)',
+                    background: 'rgba(10, 11, 20, 0.5)', border: '1px solid rgba(255, 255, 255, 0.05)',
                     borderRadius: 12, padding: 16, transition: 'all 200ms ease', cursor: 'default',
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                       <span style={{ fontSize: 18 }}>{m?.icon || '📄'}</span>
-                      <span style={{ flex: 1, fontWeight: 600, fontSize: 14, color: '#F1F5F9', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</span>
+                      <span style={{ flex: 1, fontWeight: 600, fontSize: 14, color: '#FFFFFF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</span>
                       <span style={{ fontSize: 11, color: '#10B981', fontWeight: 700, background: 'rgba(16, 185, 129, 0.15)', padding: '2px 8px', borderRadius: 8 }}>{item.score}/100</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: 11, color: '#64748B' }}>{item.date}</span>
+                      <span style={{ fontSize: 11, color: '#6b6f80' }}>{item.date}</span>
                       <button type="button" onClick={() => onUse({ content: item.content, mindset: item.mindset, name: item.name })} style={{
                         padding: '5px 14px', fontSize: 12, fontWeight: 600, borderRadius: 8, border: 'none', cursor: 'pointer',
                         background: 'linear-gradient(135deg, #818CF8, #EC4899)', color: '#fff',
@@ -723,7 +727,7 @@ function VaultPanel({ open, onClose, items, onUse }: {
           <Link href="/library" style={{
             display: 'block', textAlign: 'center', marginTop: 20, padding: '12px 0',
             color: '#818CF8', fontSize: 13, fontWeight: 600, textDecoration: 'none',
-            borderTop: '1px solid rgba(148, 163, 184, 0.06)', paddingTop: 20,
+            borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: 20,
           }}>View all in Library →</Link>
         </div>
       </div>
@@ -752,6 +756,9 @@ function GeniusEngineApp() {
   const [builderOpen, setBuilderOpen] = useState(false);
   const [userTemplates, setUserTemplates] = useState<PromptTemplate[]>([]);
   const [exportFeedback, setExportFeedback] = useState<string | null>(null);
+  const [selectedSkills, setSelectedSkills] = useState<Skill[]>([]);
+  const [skillsPanelOpen, setSkillsPanelOpen] = useState(false);
+  const [customSkills, setCustomSkills] = useState<Skill[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const exportFeedbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -766,6 +773,10 @@ function GeniusEngineApp() {
 
   useEffect(() => {
     setUserTemplates(getUserTemplates());
+  }, []);
+
+  useEffect(() => {
+    setCustomSkills(getCustomSkills());
   }, []);
 
   useEffect(() => {
@@ -953,6 +964,7 @@ function GeniusEngineApp() {
           message: userMessage,
           conversationHistory,
           selectedMindset: selectedMindset || undefined,
+          selectedSkills: selectedSkills.map(s => ({ id: s.id, name: s.name, instruction: s.instruction })),
           stream: useStream,
         }),
         signal: abortController.signal,
@@ -1054,6 +1066,7 @@ function GeniusEngineApp() {
     setConversation([]);
     setInputText('');
     setSelectedMindset(null);
+    setSelectedSkills([]);
     setActiveTab('prompt');
   };
 
@@ -1067,8 +1080,8 @@ function GeniusEngineApp() {
     return text.split('\n').map((line, j) => {
       if (line.startsWith('**') && line.endsWith('**')) return <h3 key={j}>{line.replace(/\*\*/g, '')}</h3>;
       if (line.startsWith('- ')) return <li key={j}>{line.substring(2)}</li>;
-      if (line.startsWith('*') && line.endsWith('*')) return <p key={j} style={{ fontStyle: 'italic', color: '#94A3B8', marginTop: 16 }}>{line.replace(/\*/g, '')}</p>;
-      if (line === '---') return <hr key={j} style={{ border: 'none', borderTop: '1px solid rgba(148, 163, 184, 0.08)', margin: '16px 0' }} />;
+      if (line.startsWith('*') && line.endsWith('*')) return <p key={j} style={{ fontStyle: 'italic', color: '#a0a4b8', marginTop: 16 }}>{line.replace(/\*/g, '')}</p>;
+      if (line === '---') return <hr key={j} style={{ border: 'none', borderTop: '1px solid rgba(255, 255, 255, 0.06)', margin: '16px 0' }} />;
       if (line.trim() === '') return <br key={j} />;
       return <p key={j}>{line}</p>;
     });
@@ -1124,6 +1137,11 @@ function GeniusEngineApp() {
         </div>
 
         <div className="sidebar-footer">
+          <button type="button" className="library-vault-btn" onClick={() => { setSkillsPanelOpen(true); setSidebarOpen(false); }}>
+            <span className="icon"><Sparkles size={16} /></span>
+            <span className="label">Skills</span>
+            <span className="badge" style={selectedSkills.length > 0 ? { background: 'rgba(129, 140, 248, 0.2)', color: '#818CF8' } : {}}>{selectedSkills.length}</span>
+          </button>
           <button type="button" className="library-vault-btn" onClick={() => { setTemplatesOpen(true); setSidebarOpen(false); }}>
             <span className="icon"><LayoutTemplate size={16} /></span>
             <span className="label">Templates</span>
@@ -1148,21 +1166,21 @@ function GeniusEngineApp() {
 
             <section style={{ marginBottom: 32 }}>
               <h2 style={{ fontSize: 20, marginBottom: 16, color: '#818CF8' }}>How to use GeniusEngine</h2>
-              <ol style={{ paddingLeft: 24, lineHeight: 1.8, color: '#94A3B8' }}>
-                <li><strong style={{ color: '#F1F5F9' }}>Select a mindset</strong> from the sidebar (e.g. Photo, Marketing, Developer).</li>
-                <li><strong style={{ color: '#F1F5F9' }}>Enter your prompt</strong> in the text area — describe what you want to create.</li>
-                <li><strong style={{ color: '#F1F5F9' }}>Generate</strong> to get an optimized, expert-level prompt.</li>
-                <li><strong style={{ color: '#F1F5F9' }}>Save to Library</strong> to keep prompts for later, or copy/export.</li>
+              <ol style={{ paddingLeft: 24, lineHeight: 1.8, color: '#a0a4b8' }}>
+                <li><strong style={{ color: '#FFFFFF' }}>Select a mindset</strong> from the sidebar (e.g. Photo, Marketing, Developer).</li>
+                <li><strong style={{ color: '#FFFFFF' }}>Enter your prompt</strong> in the text area — describe what you want to create.</li>
+                <li><strong style={{ color: '#FFFFFF' }}>Generate</strong> to get an optimized, expert-level prompt.</li>
+                <li><strong style={{ color: '#FFFFFF' }}>Save to Library</strong> to keep prompts for later, or copy/export.</li>
               </ol>
             </section>
 
             <section style={{ marginBottom: 32 }}>
               <h2 style={{ fontSize: 20, marginBottom: 16, color: '#818CF8' }}>Terminology dictionary</h2>
-              <p style={{ color: '#94A3B8', marginBottom: 12 }}>All expert terms and their meanings by mindset. Go to:</p>
+              <p style={{ color: '#a0a4b8', marginBottom: 12 }}>All expert terms and their meanings by mindset. Go to:</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 20, alignItems: 'center' }}>
                 {Object.entries(mindsets).map(([key, m], i) => (
                   <React.Fragment key={key}>
-                    {i > 0 && <span style={{ color: '#64748B', margin: '0 2px' }}>|</span>}
+                    {i > 0 && <span style={{ color: '#6b6f80', margin: '0 2px' }}>|</span>}
                     <button type="button" onClick={() => { setActiveTab('prompt'); setSelectedMindset(key); }} style={{ background: 'none', border: 'none', color: '#818CF8', fontSize: 13, cursor: 'pointer', padding: 0 }}>{m.icon} {m.name}</button>
                   </React.Fragment>
                 ))}
@@ -1175,16 +1193,16 @@ function GeniusEngineApp() {
                   }, {} as Record<string, { term: string; desc: string; group?: string }[]>);
                   const hasGroups = Object.keys(byGroup).length > 1 || (Object.keys(byGroup)[0] && Object.keys(byGroup)[0] !== 'General');
                   return (
-                    <div key={key} id={`info-${key}`} style={{ background: 'rgba(30, 41, 59, 0.5)', border: '1px solid rgba(148, 163, 184, 0.08)', borderRadius: 16, padding: 24, scrollMarginTop: 24, backdropFilter: 'blur(16px)' }}>
+                    <div key={key} id={`info-${key}`} style={{ background: 'rgba(17, 18, 24, 0.6)', border: '1px solid rgba(255, 255, 255, 0.06)', borderRadius: 16, padding: 24, scrollMarginTop: 24, backdropFilter: 'blur(16px)' }}>
                       <button type="button" onClick={() => { setActiveTab('prompt'); setSelectedMindset(key); }} style={{ background: 'none', border: 'none', color: 'inherit', fontSize: 18, marginBottom: 12, cursor: 'pointer', padding: 0, textAlign: 'left', width: '100%' }}>{m.icon} {m.name}</button>
                       {hasGroups ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                           {Object.entries(byGroup).map(([groupName, items]) => (
                             <div key={groupName}>
-                              <h4 style={{ fontSize: 14, color: '#94A3B8', marginBottom: 8, fontWeight: 600 }}>{groupName}</h4>
+                              <h4 style={{ fontSize: 14, color: '#a0a4b8', marginBottom: 8, fontWeight: 600 }}>{groupName}</h4>
                               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                                 {items.map((s, i) => (
-                                  <button key={i} type="button" title={s.desc} onClick={() => { setActiveTab('prompt'); setSelectedMindset(key); addTerm(s.term); }} style={{ background: 'rgba(30, 41, 59, 0.6)', padding: '6px 12px', borderRadius: 8, fontSize: 13, border: '1px solid rgba(148, 163, 184, 0.08)', color: '#F1F5F9', cursor: 'pointer', transition: 'all 200ms ease' }}>{s.term}: {s.desc}</button>
+                                  <button key={i} type="button" title={s.desc} onClick={() => { setActiveTab('prompt'); setSelectedMindset(key); addTerm(s.term); }} style={{ background: 'rgba(17, 18, 24, 0.7)', padding: '6px 12px', borderRadius: 8, fontSize: 13, border: '1px solid rgba(255, 255, 255, 0.06)', color: '#FFFFFF', cursor: 'pointer', transition: 'all 200ms ease' }}>{s.term}: {s.desc}</button>
                                 ))}
                               </div>
                             </div>
@@ -1193,7 +1211,7 @@ function GeniusEngineApp() {
                       ) : (
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                           {m.suggestions.map((s, i) => (
-                            <button key={i} type="button" title={s.desc} onClick={() => { setActiveTab('prompt'); setSelectedMindset(key); addTerm(s.term); }} style={{ background: 'rgba(30, 41, 59, 0.6)', padding: '6px 12px', borderRadius: 8, fontSize: 13, border: '1px solid rgba(148, 163, 184, 0.08)', color: '#F1F5F9', cursor: 'pointer', transition: 'all 200ms ease' }}>{s.term}: {s.desc}</button>
+                            <button key={i} type="button" title={s.desc} onClick={() => { setActiveTab('prompt'); setSelectedMindset(key); addTerm(s.term); }} style={{ background: 'rgba(17, 18, 24, 0.7)', padding: '6px 12px', borderRadius: 8, fontSize: 13, border: '1px solid rgba(255, 255, 255, 0.06)', color: '#FFFFFF', cursor: 'pointer', transition: 'all 200ms ease' }}>{s.term}: {s.desc}</button>
                           ))}
                         </div>
                       )}
@@ -1205,17 +1223,17 @@ function GeniusEngineApp() {
 
             <section style={{ marginBottom: 32 }}>
               <h2 style={{ fontSize: 20, marginBottom: 16, color: '#818CF8' }}>Examples</h2>
-              <div style={{ background: 'rgba(30, 41, 59, 0.5)', border: '1px solid rgba(148, 163, 184, 0.08)', borderRadius: 16, padding: 24, marginBottom: 16, backdropFilter: 'blur(16px)' }}>
-                <p style={{ color: '#94A3B8', fontSize: 12, marginBottom: 8 }}>Photo mindset — input:</p>
-                <p style={{ color: '#F1F5F9', marginBottom: 12 }}>Product shots for a skincare brand, natural light, minimal shadows.</p>
-                <p style={{ color: '#94A3B8', fontSize: 12, marginBottom: 8 }}>You’ll get:</p>
-                <p style={{ color: '#F1F5F9' }}>An optimized prompt with role, context, technical specs (e.g. aspect ratio, depth of field), composition notes, and a quality score.</p>
+              <div style={{ background: 'rgba(17, 18, 24, 0.6)', border: '1px solid rgba(255, 255, 255, 0.06)', borderRadius: 16, padding: 24, marginBottom: 16, backdropFilter: 'blur(16px)' }}>
+                <p style={{ color: '#a0a4b8', fontSize: 12, marginBottom: 8 }}>Photo mindset — input:</p>
+                <p style={{ color: '#FFFFFF', marginBottom: 12 }}>Product shots for a skincare brand, natural light, minimal shadows.</p>
+                <p style={{ color: '#a0a4b8', fontSize: 12, marginBottom: 8 }}>You’ll get:</p>
+                <p style={{ color: '#FFFFFF' }}>An optimized prompt with role, context, technical specs (e.g. aspect ratio, depth of field), composition notes, and a quality score.</p>
               </div>
-              <div style={{ background: 'rgba(30, 41, 59, 0.5)', border: '1px solid rgba(148, 163, 184, 0.08)', borderRadius: 16, padding: 24, backdropFilter: 'blur(16px)' }}>
-                <p style={{ color: '#94A3B8', fontSize: 12, marginBottom: 8 }}>Marketing mindset — input:</p>
-                <p style={{ color: '#F1F5F9', marginBottom: 12 }}>Email sequence for a product launch.</p>
-                <p style={{ color: '#94A3B8', fontSize: 12, marginBottom: 8 }}>You’ll get:</p>
-                <p style={{ color: '#F1F5F9' }}>Strategic overview, AIDA-style structure, CTAs, and implementation steps with best practices.</p>
+              <div style={{ background: 'rgba(17, 18, 24, 0.6)', border: '1px solid rgba(255, 255, 255, 0.06)', borderRadius: 16, padding: 24, backdropFilter: 'blur(16px)' }}>
+                <p style={{ color: '#a0a4b8', fontSize: 12, marginBottom: 8 }}>Marketing mindset — input:</p>
+                <p style={{ color: '#FFFFFF', marginBottom: 12 }}>Email sequence for a product launch.</p>
+                <p style={{ color: '#a0a4b8', fontSize: 12, marginBottom: 8 }}>You’ll get:</p>
+                <p style={{ color: '#FFFFFF' }}>Strategic overview, AIDA-style structure, CTAs, and implementation steps with best practices.</p>
               </div>
             </section>
           </div>
@@ -1241,7 +1259,7 @@ function GeniusEngineApp() {
                           <button key={i} type="button" className="suggestion-pill" onClick={() => addTerm(s.term)} title={s.desc}>{s.term}</button>
                         ))}
                       </div>
-                      <button type="button" onClick={() => setActiveTab('info')} style={{ background: 'transparent', border: 'none', color: '#64748B', fontSize: 12, cursor: 'pointer', padding: '4px 0', marginTop: 12, display: 'block', margin: '12px auto 0', width: 'fit-content', transition: 'color 200ms ease' }} onMouseEnter={e => (e.currentTarget.style.color = '#818CF8')} onMouseLeave={e => (e.currentTarget.style.color = '#64748B')}>View all terms in Information &amp; Guide →</button>
+                      <button type="button" onClick={() => setActiveTab('info')} style={{ background: 'transparent', border: 'none', color: '#6b6f80', fontSize: 12, cursor: 'pointer', padding: '4px 0', marginTop: 12, display: 'block', margin: '12px auto 0', width: 'fit-content', transition: 'color 200ms ease' }} onMouseEnter={e => (e.currentTarget.style.color = '#818CF8')} onMouseLeave={e => (e.currentTarget.style.color = '#6b6f80')}>View all terms in Information &amp; Guide →</button>
                     </div>
                   )}
                 </>
@@ -1254,10 +1272,10 @@ function GeniusEngineApp() {
                           <div style={{ width: 34, height: 34, borderRadius: msg.role === 'user' ? '50%' : 10, background: msg.role === 'user' ? 'linear-gradient(135deg, #818CF8, #EC4899)' : '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 13, fontWeight: 700, flexShrink: 0, boxShadow: msg.role === 'user' ? '0 2px 8px rgba(129,140,248,0.3)' : '0 2px 8px rgba(16,185,129,0.3)' }}>{msg.role === 'user' ? 'U' : 'G'}</div>
                           <div style={{ flex: 1, minWidth: 0, fontSize: 15, lineHeight: 1.7 }}>
                             {msg.role === 'user' ? (
-                              <p style={{ color: '#F1F5F9', whiteSpace: 'pre-wrap', wordBreak: 'break-word', margin: 0, fontWeight: 500 }}>{msg.content}</p>
+                              <p style={{ color: '#FFFFFF', whiteSpace: 'pre-wrap', wordBreak: 'break-word', margin: 0, fontWeight: 500 }}>{msg.content}</p>
                             ) : (
                               <>
-                                <div style={{ color: '#F1F5F9', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{formatOutputContent(msg.content)}</div>
+                                <div style={{ color: '#FFFFFF', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{formatOutputContent(msg.content)}</div>
                                 {msg.model != null && (
                                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 10, fontSize: 11, color: MODEL_CONFIG[msg.model].color, background: `${MODEL_CONFIG[msg.model].color}15`, padding: '3px 10px', borderRadius: 8, fontWeight: 600 }}>
                                     <span style={{ fontSize: 12 }}>{MODEL_CONFIG[msg.model].icon}</span>
@@ -1328,6 +1346,13 @@ function GeniusEngineApp() {
               )}
             </div>
 
+            <div style={{ padding: '0 24px' }}>
+              <SkillChips
+                skills={selectedSkills}
+                onRemove={(id) => setSelectedSkills(prev => prev.filter(s => s.id !== id))}
+                onOpenPanel={() => setSkillsPanelOpen(true)}
+              />
+            </div>
             <div className="input-bar">
               {lastAssistantMessage ? (
                 <div className="input-container">
@@ -1380,13 +1405,32 @@ function GeniusEngineApp() {
         onClose={() => setBuilderOpen(false)}
         onGenerate={handleBuilderGenerate}
       />
+
+      <SkillsPanel
+        open={skillsPanelOpen}
+        onClose={() => setSkillsPanelOpen(false)}
+        selectedSkills={selectedSkills}
+        customSkills={customSkills}
+        onToggleSkill={(skill) => {
+          setSelectedSkills(prev =>
+            prev.some(s => s.id === skill.id)
+              ? prev.filter(s => s.id !== skill.id)
+              : [...prev, skill]
+          );
+        }}
+        onCreateSkill={(skillData) => {
+          const newSkill = addCustomSkill(skillData);
+          setCustomSkills(getCustomSkills());
+          setSelectedSkills(prev => [...prev, newSkill]);
+        }}
+      />
     </div>
   );
 }
 
 export default function AppPage() {
   return (
-    <Suspense fallback={<div style={{ minHeight: '100vh', background: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8' }}>Loading...</div>}>
+    <Suspense fallback={<div style={{ minHeight: '100vh', background: '#0a0b14', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#a0a4b8' }}>Loading...</div>}>
       <GeniusEngineApp />
     </Suspense>
   );

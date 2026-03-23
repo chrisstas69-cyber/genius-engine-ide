@@ -43,6 +43,18 @@ export interface PromptTemplate {
   prompt: string;
 }
 
+export type SkillCategory = 'Reasoning' | 'Output Format' | 'Tone & Style' | 'Analysis' | 'Creative' | 'Optimization';
+
+export interface Skill {
+  id: string;
+  name: string;
+  icon: string;
+  category: SkillCategory;
+  description: string;
+  instruction: string;
+  isCustom?: boolean;
+}
+
 export type AppView = 'home' | 'input' | 'loading' | 'output' | 'library';
 
 export interface AppState {

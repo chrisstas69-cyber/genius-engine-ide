@@ -51,12 +51,12 @@ export default function LibraryPage() {
   const mindsetKeys = Object.keys(mindsets);
 
   return (
-    <div className="min-h-screen" style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", background: '#0F172A', color: '#F1F5F9' }}>
+    <div className="min-h-screen" style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", background: '#0a0b14', color: '#FFFFFF' }}>
       <header style={{
         padding: '16px 32px',
-        borderBottom: '1px solid rgba(148, 163, 184, 0.08)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16,
-        background: 'rgba(15, 23, 42, 0.8)',
+        background: 'rgba(10, 11, 20, 0.9)',
         backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
       }}>
         <Link href="/" style={{
@@ -66,7 +66,7 @@ export default function LibraryPage() {
           backgroundClip: 'text',
         }}>GeniusEngine</Link>
         <nav style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-          <Link href="/" style={{ color: '#94A3B8', textDecoration: 'none', fontSize: 14, transition: 'color 200ms' }}>App</Link>
+          <Link href="/" style={{ color: '#a0a4b8', textDecoration: 'none', fontSize: 14, transition: 'color 200ms' }}>App</Link>
           <Link href="/" style={{
             padding: '10px 20px', borderRadius: 10,
             background: 'linear-gradient(135deg, #818CF8, #EC4899)',
@@ -84,7 +84,7 @@ export default function LibraryPage() {
           WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           backgroundClip: 'text',
         }}>Library Vault</h1>
-        <p style={{ color: '#94A3B8', marginBottom: 36, fontSize: 16 }}>Your saved prompts. Click Use to open in the IDE.</p>
+        <p style={{ color: '#a0a4b8', marginBottom: 36, fontSize: 16 }}>Your saved prompts. Click Use to open in the IDE.</p>
 
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 36 }}>
           <input
@@ -94,8 +94,8 @@ export default function LibraryPage() {
             onChange={(e) => setSearch(e.target.value)}
             style={{
               flex: '1 1 200px', padding: '12px 18px',
-              background: 'rgba(30, 41, 59, 0.6)', border: '1px solid rgba(148, 163, 184, 0.1)',
-              borderRadius: 12, color: '#F1F5F9', fontSize: 14,
+              background: 'rgba(17, 18, 24, 0.7)', border: '1px solid rgba(255, 255, 255, 0.08)',
+              borderRadius: 12, color: '#FFFFFF', fontSize: 14,
               transition: 'border-color 200ms ease',
             }}
           />
@@ -104,8 +104,8 @@ export default function LibraryPage() {
             onChange={(e) => setFilterMindset(e.target.value)}
             style={{
               padding: '12px 16px',
-              background: 'rgba(30, 41, 59, 0.6)', border: '1px solid rgba(148, 163, 184, 0.1)',
-              borderRadius: 12, color: '#F1F5F9', fontSize: 14, minWidth: 180,
+              background: 'rgba(17, 18, 24, 0.7)', border: '1px solid rgba(255, 255, 255, 0.08)',
+              borderRadius: 12, color: '#FFFFFF', fontSize: 14, minWidth: 180,
               cursor: 'pointer',
             }}
           >
@@ -120,8 +120,8 @@ export default function LibraryPage() {
             onChange={(e) => setSortOrder(e.target.value as 'newest' | 'oldest')}
             style={{
               padding: '12px 16px',
-              background: 'rgba(30, 41, 59, 0.6)', border: '1px solid rgba(148, 163, 184, 0.1)',
-              borderRadius: 12, color: '#F1F5F9', fontSize: 14, minWidth: 160,
+              background: 'rgba(17, 18, 24, 0.7)', border: '1px solid rgba(255, 255, 255, 0.08)',
+              borderRadius: 12, color: '#FFFFFF', fontSize: 14, minWidth: 160,
               cursor: 'pointer',
             }}
           >
@@ -138,8 +138,8 @@ export default function LibraryPage() {
               <div
                 key={item.id}
                 style={{
-                  background: 'rgba(30, 41, 59, 0.5)',
-                  border: '1px solid rgba(148, 163, 184, 0.08)',
+                  background: 'rgba(17, 18, 24, 0.6)',
+                  border: '1px solid rgba(255, 255, 255, 0.06)',
                   borderRadius: 16, padding: 24,
                   transition: 'all 200ms ease',
                   backdropFilter: 'blur(16px)',
@@ -150,7 +150,7 @@ export default function LibraryPage() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
                   <div>
                     <span style={{ fontSize: 28, display: 'block', marginBottom: 6 }}>{mindset?.icon || '📄'}</span>
-                    <span style={{ color: '#94A3B8', fontSize: 12, fontWeight: 500 }}>{displayName}</span>
+                    <span style={{ color: '#a0a4b8', fontSize: 12, fontWeight: 500 }}>{displayName}</span>
                   </div>
                   <div style={{
                     background: 'rgba(16, 185, 129, 0.15)',
@@ -160,8 +160,8 @@ export default function LibraryPage() {
                     border: '1px solid rgba(16, 185, 129, 0.25)',
                   }}>{item.score}/100</div>
                 </div>
-                <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 8, lineHeight: 1.4, color: '#F1F5F9' }}>{item.name}</h3>
-                <p style={{ color: '#64748B', fontSize: 12, marginBottom: 18 }}>{item.date}</p>
+                <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 8, lineHeight: 1.4, color: '#FFFFFF' }}>{item.name}</h3>
+                <p style={{ color: '#6b6f80', fontSize: 12, marginBottom: 18 }}>{item.date}</p>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <button
                     type="button"
@@ -181,8 +181,8 @@ export default function LibraryPage() {
                     style={{
                       padding: '8px 16px',
                       background: 'transparent',
-                      color: '#94A3B8',
-                      border: '1px solid rgba(148, 163, 184, 0.1)',
+                      color: '#a0a4b8',
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
                       borderRadius: 10, fontSize: 13, cursor: 'pointer',
                       transition: 'all 200ms ease',
                     }}
@@ -192,21 +192,21 @@ export default function LibraryPage() {
             );
           })}
           <Link href="/" style={{
-            background: 'rgba(30, 41, 59, 0.3)',
-            border: '2px dashed rgba(148, 163, 184, 0.12)',
+            background: 'rgba(17, 18, 24, 0.4)',
+            border: '2px dashed rgba(255, 255, 255, 0.10)',
             borderRadius: 16, padding: 28,
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-            minHeight: 200, textDecoration: 'none', color: '#94A3B8',
+            minHeight: 200, textDecoration: 'none', color: '#a0a4b8',
             transition: 'all 200ms ease',
           }} className="library-card">
             <span style={{ fontSize: 36, marginBottom: 10, opacity: 0.7 }}>+</span>
-            <span style={{ color: '#F1F5F9', fontWeight: 600, fontSize: 15 }}>Create new prompt</span>
-            <span style={{ fontSize: 12, marginTop: 6, color: '#64748B' }}>Open IDE</span>
+            <span style={{ color: '#FFFFFF', fontWeight: 600, fontSize: 15 }}>Create new prompt</span>
+            <span style={{ fontSize: 12, marginTop: 6, color: '#6b6f80' }}>Open IDE</span>
           </Link>
         </div>
 
         {sortedFiltered.length === 0 && (
-          <p style={{ textAlign: 'center', color: '#94A3B8', padding: 64, fontSize: 15 }}>
+          <p style={{ textAlign: 'center', color: '#a0a4b8', padding: 64, fontSize: 15 }}>
             {search || filterMindset ? 'No prompts match your filters.' : 'No saved prompts yet. Save from the IDE to see them here.'}
           </p>
         )}

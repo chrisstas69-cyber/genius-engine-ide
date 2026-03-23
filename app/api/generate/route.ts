@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 
 type Provider = 'openai' | 'anthropic';
 
-function buildSystemPrompt(mindsetName: string): string {
-  return `You are GeniusEngine, an expert prompt optimizer. The user has selected the "${mindsetName}" mindset.
+function buildSystemPrompt(mindsetName: string, skills?: { name: string; instruction: string }[]): string {
+  let prompt = `You are GeniusEngine, an expert prompt optimizer. The user has selected the "${mindsetName}" mindset.
 
 Your task: Turn the user's raw idea into a single, polished, expert-level prompt they can copy and use (e.g. in ChatGPT, Claude, or an image generator).
 
@@ -13,13 +13,20 @@ Rules:
 - End with a single line: "**Quality Score: XX/100**" where XX is 75-98. Add one short sentence after it (e.g. "Strong specificity; consider adding X for an even higher score.").
 - Do not add meta-commentary like "Here's your prompt" before the prompt. Output the prompt content only.
 - Use markdown: **bold** for headings, - for lists, --- for dividers if needed.`;
+
+  if (skills && skills.length > 0) {
+    const skillLines = skills.map(s => `- **${s.name}:** ${s.instruction}`).join('\n');
+    prompt += `\n\nActive Skills (apply these techniques to your response):\n${skillLines}`;
+  }
+
+  return prompt;
 }
 
-async function callOpenAI(input: string, mindsetName: string): Promise<string> {
+async function callOpenAI(input: string, mindsetName: string, skills?: { name: string; instruction: string }[]): Promise<string> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error('OPENAI_API_KEY is not set');
 
-  const systemPrompt = buildSystemPrompt(mindsetName);
+  const systemPrompt = buildSystemPrompt(mindsetName, skills);
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -47,11 +54,11 @@ async function callOpenAI(input: string, mindsetName: string): Promise<string> {
   return content;
 }
 
-async function callAnthropic(input: string, mindsetName: string): Promise<string> {
+async function callAnthropic(input: string, mindsetName: string, skills?: { name: string; instruction: string }[]): Promise<string> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY is not set');
 
-  const systemPrompt = buildSystemPrompt(mindsetName);
+  const systemPrompt = buildSystemPrompt(mindsetName, skills);
   const res = await fetch(
     'https://api.anthropic.com/v1/messages',
     {
@@ -84,7 +91,7 @@ async function callAnthropic(input: string, mindsetName: string): Promise<string
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { input, mindset, provider } = body as { input?: string; mindset?: string | null; provider?: string };
+    const { input, mindset, provider, selectedSkills } = body as { input?: string; mindset?: string | null; provider?: string; selectedSkills?: { id: string; name: string; instruction: string }[] };
 
     if (!input || typeof input !== 'string' || !input.trim()) {
       return NextResponse.json({ error: 'Missing or invalid input' }, { status: 400 });
@@ -95,13 +102,15 @@ export async function POST(request: NextRequest) {
     const mindsetName = mindset && typeof mindset === 'string' ? mindset : 'general';
     const displayName = mindsetName.charAt(0).toUpperCase() + mindsetName.slice(1).replace(/_/g, ' ');
 
+    const skills = Array.isArray(selectedSkills) ? selectedSkills : undefined;
+
     let content: string;
     switch (selectedProvider) {
       case 'openai':
-        content = await callOpenAI(input.trim(), displayName);
+        content = await callOpenAI(input.trim(), displayName, skills);
         break;
       case 'anthropic':
-        content = await callAnthropic(input.trim(), displayName);
+        content = await callAnthropic(input.trim(), displayName, skills);
         break;
       default:
         return NextResponse.json({ error: 'Unsupported provider' }, { status: 400 });

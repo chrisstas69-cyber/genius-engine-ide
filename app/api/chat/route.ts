@@ -4,8 +4,8 @@ export type ChatModel = 'claude' | 'gpt4' | 'gemini' | 'perplexity';
 
 const VALID_MODELS: ChatModel[] = ['claude', 'gpt4', 'gemini', 'perplexity'];
 
-function buildSystemPrompt(mindsetName: string): string {
-  return `You are GeniusEngine, an expert prompt optimizer. The user has selected the "${mindsetName}" mindset. You are assisting with ${mindsetName}. Use professional terminology from this domain.
+function buildSystemPrompt(mindsetName: string, skills?: { name: string; instruction: string }[]): string {
+  let prompt = `You are GeniusEngine, an expert prompt optimizer. The user has selected the "${mindsetName}" mindset. You are assisting with ${mindsetName}. Use professional terminology from this domain.
 
 Your task: Turn the user's raw idea into a single, polished, expert-level prompt they can copy and use (e.g. in ChatGPT, Claude, or an image generator).
 
@@ -15,6 +15,13 @@ Rules:
 - End with a single line: "**Quality Score: XX/100**" where XX is 75-98. Add one short sentence after it (e.g. "Strong specificity; consider adding X for an even higher score.").
 - Do not add meta-commentary like "Here's your prompt" before the prompt. Output the prompt content only.
 - Use markdown: **bold** for headings, - for lists, --- for dividers if needed.`;
+
+  if (skills && skills.length > 0) {
+    const skillLines = skills.map(s => `- **${s.name}:** ${s.instruction}`).join('\n');
+    prompt += `\n\nActive Skills (apply these techniques to your response):\n${skillLines}`;
+  }
+
+  return prompt;
 }
 
 function getMindsetDisplayName(selectedMindset: string | null | undefined): string {
@@ -355,12 +362,14 @@ export async function POST(request: NextRequest) {
       message,
       conversationHistory,
       selectedMindset,
+      selectedSkills,
       stream: wantStream,
     } = body as {
       model?: string;
       message?: string;
       conversationHistory?: { role: string; content: string }[];
       selectedMindset?: string | null;
+      selectedSkills?: { id: string; name: string; instruction: string }[];
       stream?: boolean;
     };
 
@@ -371,7 +380,8 @@ export async function POST(request: NextRequest) {
     const selectedModel = VALID_MODELS.includes(model as ChatModel) ? (model as ChatModel) : 'claude';
     const history = Array.isArray(conversationHistory) ? conversationHistory : [];
     const mindsetName = getMindsetDisplayName(selectedMindset);
-    const systemPrompt = buildSystemPrompt(mindsetName);
+    const skills = Array.isArray(selectedSkills) ? selectedSkills : undefined;
+    const systemPrompt = buildSystemPrompt(mindsetName, skills);
 
     if (selectedModel === 'claude') {
       if (!getApiKey('ANTHROPIC_API_KEY')) return missingKeyResponse('ANTHROPIC_API_KEY');
