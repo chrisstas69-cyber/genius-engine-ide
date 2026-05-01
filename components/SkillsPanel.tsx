@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Plus, Search, Check, Sparkles } from 'lucide-react';
+import { X, Plus, Search, Check, Sparkles, Copy, Trash2 } from 'lucide-react';
 import type { Skill, SkillCategory } from '@/lib/types';
 import { SKILL_CATEGORIES, SKILL_CATEGORY_COLORS, BUILTIN_SKILLS } from '@/lib/skills';
 
@@ -12,19 +12,24 @@ interface SkillsPanelProps {
   customSkills: Skill[];
   onToggleSkill: (skill: Skill) => void;
   onCreateSkill: (skill: Omit<Skill, 'id' | 'isCustom'>) => void;
+  onDeleteSkill: (id: string) => void;
 }
 
-export default function SkillsPanel({ open, onClose, selectedSkills, customSkills, onToggleSkill, onCreateSkill }: SkillsPanelProps) {
+type FilterCategory = SkillCategory | 'All' | 'My Skills';
+
+export default function SkillsPanel({ open, onClose, selectedSkills, customSkills, onToggleSkill, onCreateSkill, onDeleteSkill }: SkillsPanelProps) {
   const [search, setSearch] = useState('');
-  const [filterCategory, setFilterCategory] = useState<SkillCategory | 'All'>('All');
+  const [filterCategory, setFilterCategory] = useState<FilterCategory>('All');
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [newSkill, setNewSkill] = useState({ name: '', category: 'Reasoning' as SkillCategory, description: '', instruction: '', icon: '🛠️' });
+  const [newSkill, setNewSkill] = useState({ name: '', category: 'Coding' as SkillCategory, description: '', instruction: '', icon: '🛠️' });
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   if (!open) return null;
 
   const allSkills = [...BUILTIN_SKILLS, ...customSkills];
   const filtered = allSkills.filter(s => {
     const matchSearch = s.name.toLowerCase().includes(search.toLowerCase()) || s.description.toLowerCase().includes(search.toLowerCase());
+    if (filterCategory === 'My Skills') return matchSearch && s.isCustom;
     const matchCategory = filterCategory === 'All' || s.category === filterCategory;
     return matchSearch && matchCategory;
   });
@@ -34,8 +39,22 @@ export default function SkillsPanel({ open, onClose, selectedSkills, customSkill
   const handleCreate = () => {
     if (!newSkill.name.trim() || !newSkill.instruction.trim()) return;
     onCreateSkill(newSkill);
-    setNewSkill({ name: '', category: 'Reasoning', description: '', instruction: '', icon: '🛠️' });
+    setNewSkill({ name: '', category: 'Coding', description: '', instruction: '', icon: '🛠️' });
     setShowCreateForm(false);
+    setFilterCategory('My Skills');
+  };
+
+  const handleCopy = (skill: Skill, e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(skill.instruction).then(() => {
+      setCopiedId(skill.id);
+      setTimeout(() => setCopiedId(null), 1500);
+    });
+  };
+
+  const handleDelete = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDeleteSkill(id);
   };
 
   return (
@@ -94,27 +113,17 @@ export default function SkillsPanel({ open, onClose, selectedSkills, customSkill
 
         {/* Category pills */}
         <div style={{ padding: '14px 24px 0', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <button
-            onClick={() => setFilterCategory('All')}
-            style={{
-              padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-              border: filterCategory === 'All' ? '1px solid rgba(129, 140, 248, 0.5)' : '1px solid rgba(255,255,255,0.08)',
-              background: filterCategory === 'All' ? 'rgba(129, 140, 248, 0.15)' : 'transparent',
-              color: filterCategory === 'All' ? '#818CF8' : '#a0a4b8',
-              cursor: 'pointer', transition: 'all 150ms',
-            }}
-          >All</button>
-          {SKILL_CATEGORIES.map(cat => {
-            const color = SKILL_CATEGORY_COLORS[cat];
+          {(['All', 'My Skills', ...SKILL_CATEGORIES] as FilterCategory[]).map(cat => {
             const isActive = filterCategory === cat;
+            const color = cat === 'All' || cat === 'My Skills' ? '#818CF8' : SKILL_CATEGORY_COLORS[cat as SkillCategory];
             return (
               <button
                 key={cat}
                 onClick={() => setFilterCategory(cat)}
                 style={{
                   padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-                  border: `1px solid ${isActive ? color + '80' : 'rgba(255,255,255,0.08)'}`,
-                  background: isActive ? color + '20' : 'transparent',
+                  border: isActive ? `1px solid ${color}80` : '1px solid rgba(255,255,255,0.08)',
+                  background: isActive ? `${color}20` : 'transparent',
                   color: isActive ? color : '#a0a4b8',
                   cursor: 'pointer', transition: 'all 150ms',
                 }}
@@ -128,47 +137,100 @@ export default function SkillsPanel({ open, onClose, selectedSkills, customSkill
           {filtered.map(skill => {
             const selected = isSelected(skill.id);
             const catColor = SKILL_CATEGORY_COLORS[skill.category];
+            const isCopied = copiedId === skill.id;
             return (
-              <button
+              <div
                 key={skill.id}
-                onClick={() => onToggleSkill(skill)}
                 style={{
                   display: 'flex', alignItems: 'flex-start', gap: 12,
-                  padding: '14px 16px', borderRadius: 12, cursor: 'pointer',
+                  padding: '14px 16px', borderRadius: 12,
                   background: selected ? catColor + '10' : 'rgba(255,255,255,0.02)',
                   border: `1px solid ${selected ? catColor + '40' : 'rgba(255,255,255,0.06)'}`,
-                  textAlign: 'left', transition: 'all 150ms',
-                  width: '100%',
+                  transition: 'all 150ms',
                 }}
               >
-                <span style={{ fontSize: 20, lineHeight: 1, flexShrink: 0, marginTop: 2 }}>{skill.icon}</span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                    <span style={{ fontWeight: 600, fontSize: 14, color: '#FFFFFF' }}>{skill.name}</span>
-                    <span style={{
-                      fontSize: 10, padding: '2px 8px', borderRadius: 8, fontWeight: 600,
-                      background: catColor + '20', color: catColor,
-                    }}>{skill.category}</span>
-                    {skill.isCustom && (
-                      <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 6, background: 'rgba(255,255,255,0.06)', color: '#6b6f80' }}>Custom</span>
-                    )}
+                {/* Main toggle area */}
+                <button
+                  onClick={() => onToggleSkill(skill)}
+                  style={{
+                    display: 'flex', alignItems: 'flex-start', gap: 12,
+                    flex: 1, background: 'none', border: 'none', cursor: 'pointer',
+                    textAlign: 'left', padding: 0, minWidth: 0,
+                  }}
+                >
+                  <span style={{ fontSize: 20, lineHeight: 1, flexShrink: 0, marginTop: 2 }}>{skill.icon}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
+                      <span style={{ fontWeight: 600, fontSize: 14, color: '#FFFFFF' }}>{skill.name}</span>
+                      <span style={{
+                        fontSize: 10, padding: '2px 8px', borderRadius: 8, fontWeight: 600,
+                        background: catColor + '20', color: catColor,
+                      }}>{skill.category}</span>
+                      {skill.isCustom && (
+                        <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 6, background: 'rgba(255,255,255,0.06)', color: '#6b6f80' }}>Custom</span>
+                      )}
+                    </div>
+                    <p style={{ fontSize: 12, color: '#a0a4b8', margin: 0, lineHeight: 1.4 }}>{skill.description}</p>
                   </div>
-                  <p style={{ fontSize: 12, color: '#a0a4b8', margin: 0, lineHeight: 1.4 }}>{skill.description}</p>
+                </button>
+
+                {/* Action buttons */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, marginTop: 2 }}>
+                  {/* Copy button */}
+                  <button
+                    onClick={(e) => handleCopy(skill, e)}
+                    title="Copy instruction to clipboard"
+                    style={{
+                      background: isCopied ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.04)',
+                      border: `1px solid ${isCopied ? 'rgba(16,185,129,0.4)' : 'rgba(255,255,255,0.1)'}`,
+                      borderRadius: 6, padding: '4px 8px', cursor: 'pointer',
+                      color: isCopied ? '#10B981' : '#6b6f80',
+                      fontSize: 11, fontWeight: 600,
+                      display: 'flex', alignItems: 'center', gap: 4,
+                      transition: 'all 150ms',
+                    }}
+                  >
+                    <Copy size={11} />
+                    {isCopied ? 'Copied!' : 'Copy'}
+                  </button>
+
+                  {/* Delete button (custom skills only) */}
+                  {skill.isCustom && (
+                    <button
+                      onClick={(e) => handleDelete(skill.id, e)}
+                      title="Delete custom skill"
+                      style={{
+                        background: 'transparent', border: '1px solid rgba(239,68,68,0.2)',
+                        borderRadius: 6, padding: '4px 6px', cursor: 'pointer',
+                        color: 'rgba(239,68,68,0.6)', display: 'flex', alignItems: 'center',
+                        transition: 'all 150ms',
+                      }}
+                    >
+                      <Trash2 size={11} />
+                    </button>
+                  )}
+
+                  {/* Select checkbox */}
+                  <button
+                    onClick={() => onToggleSkill(skill)}
+                    style={{
+                      width: 22, height: 22, borderRadius: 6, flexShrink: 0,
+                      border: `2px solid ${selected ? catColor : 'rgba(255,255,255,0.15)'}`,
+                      background: selected ? catColor : 'transparent',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      transition: 'all 150ms', cursor: 'pointer',
+                    }}
+                  >
+                    {selected && <Check size={14} color="#FFFFFF" strokeWidth={3} />}
+                  </button>
                 </div>
-                <div style={{
-                  width: 22, height: 22, borderRadius: 6, flexShrink: 0, marginTop: 2,
-                  border: `2px solid ${selected ? catColor : 'rgba(255,255,255,0.15)'}`,
-                  background: selected ? catColor : 'transparent',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  transition: 'all 150ms',
-                }}>
-                  {selected && <Check size={14} color="#FFFFFF" strokeWidth={3} />}
-                </div>
-              </button>
+              </div>
             );
           })}
           {filtered.length === 0 && (
-            <p style={{ textAlign: 'center', color: '#6b6f80', padding: 32, fontSize: 14 }}>No skills match your search.</p>
+            <p style={{ textAlign: 'center', color: '#6b6f80', padding: 32, fontSize: 14 }}>
+              {filterCategory === 'My Skills' ? 'No custom skills yet. Create one below.' : 'No skills match your search.'}
+            </p>
           )}
         </div>
 

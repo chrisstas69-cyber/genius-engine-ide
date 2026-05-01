@@ -6,8 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { getSavedPrompts, addSavedPrompt } from '@/lib/savedPrompts';
 import { PROMPT_TEMPLATES } from '@/lib/templates';
 import type { PromptTemplate, Skill } from '@/lib/types';
-import { getCustomSkills } from '@/lib/savedSkills';
-import { addCustomSkill } from '@/lib/savedSkills';
+import { getCustomSkills, addCustomSkill, removeCustomSkill } from '@/lib/savedSkills';
 import { BUILTIN_SKILLS, SKILL_CATEGORIES, SKILL_CATEGORY_COLORS } from '@/lib/skills';
 import SkillsPanel from '@/components/SkillsPanel';
 import SkillChips from '@/components/SkillChips';
@@ -1573,6 +1572,11 @@ function GeniusEngineApp() {
           const newSkill = addCustomSkill(skillData);
           setCustomSkills(getCustomSkills());
           setSelectedSkills(prev => [...prev, newSkill]);
+        }}
+        onDeleteSkill={(id) => {
+          removeCustomSkill(id);
+          setCustomSkills(getCustomSkills());
+          setSelectedSkills(prev => prev.filter(s => s.id !== id));
         }}
       />
     </div>

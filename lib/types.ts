@@ -43,7 +43,7 @@ export interface PromptTemplate {
   prompt: string;
 }
 
-export type SkillCategory = 'Reasoning' | 'Output Format' | 'Tone & Style' | 'Analysis' | 'Creative' | 'Optimization';
+export type SkillCategory = 'Reasoning' | 'Output Format' | 'Tone & Style' | 'Analysis' | 'Creative' | 'Optimization' | 'Coding';
 
 export interface Skill {
   id: string;
