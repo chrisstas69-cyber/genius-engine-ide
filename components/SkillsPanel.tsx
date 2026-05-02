@@ -17,11 +17,16 @@ interface SkillsPanelProps {
 
 type FilterCategory = SkillCategory | 'All' | 'My Skills';
 
+const BLANK_SKILL = { name: '', category: 'Coding' as SkillCategory, description: '', instruction: '', icon: '🛠️' };
+
 export default function SkillsPanel({ open, onClose, selectedSkills, customSkills, onToggleSkill, onCreateSkill, onDeleteSkill }: SkillsPanelProps) {
   const [search, setSearch] = useState('');
   const [filterCategory, setFilterCategory] = useState<FilterCategory>('All');
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [newSkill, setNewSkill] = useState({ name: '', category: 'Coding' as SkillCategory, description: '', instruction: '', icon: '🛠️' });
+  const [newSkill, setNewSkill] = useState(BLANK_SKILL);
+  const [goal, setGoal] = useState('');
+  const [generating, setGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   if (!open) return null;
@@ -39,9 +44,35 @@ export default function SkillsPanel({ open, onClose, selectedSkills, customSkill
   const handleCreate = () => {
     if (!newSkill.name.trim() || !newSkill.instruction.trim()) return;
     onCreateSkill(newSkill);
-    setNewSkill({ name: '', category: 'Coding', description: '', instruction: '', icon: '🛠️' });
+    setNewSkill(BLANK_SKILL);
+    setGoal('');
+    setGenerateError('');
     setShowCreateForm(false);
     setFilterCategory('My Skills');
+  };
+
+  const handleGenerate = async () => {
+    if (!goal.trim()) return;
+    setGenerating(true);
+    setGenerateError('');
+    try {
+      const res = await fetch('/api/generate-skill', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newSkill.name, category: newSkill.category, goal }),
+      });
+      const data = await res.json() as { instruction?: string; error?: string };
+      if (!res.ok || !data.instruction) throw new Error(data.error || 'Generation failed');
+      setNewSkill(p => ({
+        ...p,
+        description: p.description || goal.slice(0, 60),
+        instruction: data.instruction!,
+      }));
+    } catch (err) {
+      setGenerateError(err instanceof Error ? err.message : 'Generation failed');
+    } finally {
+      setGenerating(false);
+    }
   };
 
   const handleCopy = (skill: Skill, e: React.MouseEvent) => {
@@ -238,6 +269,7 @@ export default function SkillsPanel({ open, onClose, selectedSkills, customSkill
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '16px 24px' }}>
           {showCreateForm ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {/* Name + Category */}
               <div style={{ display: 'flex', gap: 8 }}>
                 <input
                   placeholder="Skill name"
@@ -261,8 +293,72 @@ export default function SkillsPanel({ open, onClose, selectedSkills, customSkill
                   {SKILL_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
+
+              {/* Goal → Generate */}
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input
+                  placeholder="What should this skill do? (describe in plain English)"
+                  value={goal}
+                  onChange={e => setGoal(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') handleGenerate(); }}
+                  style={{
+                    flex: 1, padding: '8px 12px', background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8,
+                    color: '#FFFFFF', fontSize: 13,
+                  }}
+                />
+                <button
+                  onClick={handleGenerate}
+                  disabled={generating || !goal.trim()}
+                  style={{
+                    padding: '8px 14px', borderRadius: 8, fontSize: 12, fontWeight: 700,
+                    background: generating || !goal.trim()
+                      ? 'rgba(129,140,248,0.15)'
+                      : 'linear-gradient(135deg, #818CF8, #EC4899)',
+                    color: generating || !goal.trim() ? '#818CF8' : '#fff',
+                    border: 'none', cursor: generating || !goal.trim() ? 'default' : 'pointer',
+                    display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap',
+                    transition: 'all 150ms',
+                  }}
+                >
+                  <Sparkles size={12} />
+                  {generating ? 'Generating…' : 'Generate'}
+                </button>
+              </div>
+
+              {generateError && (
+                <p style={{ fontSize: 12, color: '#EF4444', margin: 0 }}>{generateError}</p>
+              )}
+
+              {/* Instruction textarea — populated by AI or typed manually */}
+              <div style={{ position: 'relative' }}>
+                <textarea
+                  placeholder="Instruction will appear here after generating, or type it yourself…"
+                  value={newSkill.instruction}
+                  onChange={e => setNewSkill(p => ({ ...p, instruction: e.target.value }))}
+                  rows={4}
+                  style={{
+                    width: '100%', padding: '8px 12px', background: 'rgba(255,255,255,0.04)',
+                    border: `1px solid ${newSkill.instruction ? 'rgba(129,140,248,0.3)' : 'rgba(255,255,255,0.08)'}`,
+                    borderRadius: 8, color: '#FFFFFF', fontSize: 12, resize: 'vertical',
+                    lineHeight: 1.5, boxSizing: 'border-box',
+                  }}
+                />
+                {generating && (
+                  <div style={{
+                    position: 'absolute', inset: 0, borderRadius: 8,
+                    background: 'rgba(17,18,24,0.7)', display: 'flex',
+                    alignItems: 'center', justifyContent: 'center',
+                    fontSize: 12, color: '#818CF8', gap: 6,
+                  }}>
+                    <Sparkles size={13} /> Writing instruction…
+                  </div>
+                )}
+              </div>
+
+              {/* Short description (optional) */}
               <input
-                placeholder="Short description"
+                placeholder="Short description (optional — auto-filled from goal)"
                 value={newSkill.description}
                 onChange={e => setNewSkill(p => ({ ...p, description: e.target.value }))}
                 style={{
@@ -271,28 +367,22 @@ export default function SkillsPanel({ open, onClose, selectedSkills, customSkill
                   color: '#FFFFFF', fontSize: 13,
                 }}
               />
-              <textarea
-                placeholder="Instruction (how should the AI behave?)"
-                value={newSkill.instruction}
-                onChange={e => setNewSkill(p => ({ ...p, instruction: e.target.value }))}
-                rows={3}
-                style={{
-                  padding: '8px 12px', background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8,
-                  color: '#FFFFFF', fontSize: 13, resize: 'vertical',
-                }}
-              />
+
               <div style={{ display: 'flex', gap: 8 }}>
                 <button
                   onClick={handleCreate}
+                  disabled={!newSkill.name.trim() || !newSkill.instruction.trim()}
                   style={{
                     flex: 1, padding: '10px 16px', borderRadius: 10,
-                    background: 'linear-gradient(135deg, #818CF8, #EC4899)',
-                    color: '#fff', border: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                    background: !newSkill.name.trim() || !newSkill.instruction.trim()
+                      ? 'rgba(129,140,248,0.2)'
+                      : 'linear-gradient(135deg, #818CF8, #EC4899)',
+                    color: '#fff', border: 'none', fontSize: 13, fontWeight: 600,
+                    cursor: !newSkill.name.trim() || !newSkill.instruction.trim() ? 'default' : 'pointer',
                   }}
-                >Create Skill</button>
+                >Save Skill</button>
                 <button
-                  onClick={() => setShowCreateForm(false)}
+                  onClick={() => { setShowCreateForm(false); setGoal(''); setGenerateError(''); setNewSkill(BLANK_SKILL); }}
                   style={{
                     padding: '10px 16px', borderRadius: 10,
                     background: 'transparent', border: '1px solid rgba(255,255,255,0.08)',
