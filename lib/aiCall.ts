@@ -94,6 +94,7 @@ async function callPerplexity(
   maxTokens: number,
 ): Promise<string> {
   const apiKey = (process.env.PERPLEXITY_API_KEY ?? '').trim();
+  // sonar-pro follows structured/JSON instructions more reliably than sonar
   const res = await fetch('https://api.perplexity.ai/chat/completions', {
     method: 'POST',
     headers: {
@@ -101,7 +102,7 @@ async function callPerplexity(
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: 'sonar',
+      model: 'sonar-pro',
       messages: [
         { role: 'system', content: systemPrompt },
         ...messages,

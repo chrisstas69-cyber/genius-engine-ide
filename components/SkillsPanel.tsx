@@ -34,6 +34,30 @@ interface GeneratedSkill {
 
 const VALID_CATEGORIES = new Set<string>(SKILL_CATEGORIES);
 
+function ProviderBadge() {
+  const [provider, setProvider] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/skill-provider')
+      .then(r => r.json())
+      .then((d: { provider?: string }) => { if (d.provider) setProvider(d.provider); })
+      .catch(() => {});
+  }, []);
+
+  if (!provider) return null;
+
+  const labels: Record<string, string> = { claude: '⚡ Claude', gemini: '✦ Gemini', perplexity: '◎ Perplexity' };
+  return (
+    <span style={{
+      fontSize: 11, color: '#6b6f80',
+      background: 'rgba(255,255,255,0.04)', padding: '2px 8px', borderRadius: 6,
+      border: '1px solid rgba(255,255,255,0.06)',
+    }}>
+      {labels[provider] ?? provider}
+    </span>
+  );
+}
+
 function sanitizeCategory(cat: string | undefined): SkillCategory {
   if (cat && VALID_CATEGORIES.has(cat)) return cat as SkillCategory;
   return 'Coding';
@@ -136,18 +160,23 @@ export default function SkillsPanel({
       if (data.type === 'questions') {
         setChatMessages(prev => [...prev, { role: 'assistant', content: data.message || '' }]);
       } else if (data.type === 'skill') {
+        if (!data.instruction) throw new Error('AI returned a skill with no instruction. Try again.');
         const skill: GeneratedSkill = {
           name: data.name || 'Custom Skill',
           category: sanitizeCategory(data.category),
           icon: data.icon || '🛠️',
           description: data.description || '',
-          instruction: data.instruction || '',
+          instruction: data.instruction,
         };
         setPendingSkill(skill);
         setCreateMode('preview');
+      } else {
+        throw new Error(`Unexpected response from AI (type="${data.type ?? 'none'}"). Try rephrasing your request.`);
       }
     } catch (err) {
-      setChatError(err instanceof Error ? err.message : 'Something went wrong');
+      const msg = err instanceof Error ? err.message : 'Something went wrong';
+      console.error('[skill-chat]', msg);
+      setChatError(msg);
     } finally {
       setChatLoading(false);
     }
@@ -364,9 +393,12 @@ export default function SkillsPanel({
               padding: '12px 24px', borderBottom: '1px solid rgba(255,255,255,0.06)',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0,
             }}>
-              <p style={{ margin: 0, fontSize: 13, color: '#a0a4b8' }}>
-                Describe the skill you want — I&apos;ll ask questions if I need more detail.
-              </p>
+              <div>
+                <p style={{ margin: '0 0 4px', fontSize: 13, color: '#a0a4b8' }}>
+                  Describe the skill you want — I&apos;ll ask questions if needed.
+                </p>
+                <ProviderBadge />
+              </div>
               <button onClick={resetCreate} title="Cancel" style={{ background: 'none', border: 'none', color: '#6b6f80', cursor: 'pointer', padding: 4 }}>
                 <X size={16} />
               </button>
@@ -417,7 +449,23 @@ export default function SkillsPanel({
                 </div>
               )}
               {chatError && (
-                <p style={{ fontSize: 12, color: '#EF4444', textAlign: 'center', margin: 0 }}>{chatError}</p>
+                <div style={{
+                  padding: '14px 16px', borderRadius: 12,
+                  background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
+                  display: 'flex', flexDirection: 'column', gap: 10,
+                }}>
+                  <p style={{ fontSize: 13, color: '#FCA5A5', margin: 0, lineHeight: 1.5 }}>
+                    ⚠️ {chatError}
+                  </p>
+                  <button
+                    onClick={() => { setChatError(''); inputRef.current?.focus(); }}
+                    style={{
+                      alignSelf: 'flex-start', padding: '6px 14px', borderRadius: 8,
+                      background: 'rgba(239,68,68,0.2)', border: '1px solid rgba(239,68,68,0.4)',
+                      color: '#FCA5A5', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                    }}
+                  >Dismiss & retry</button>
+                </div>
               )}
               <div ref={chatEndRef} />
             </div>
