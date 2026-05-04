@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { callAI, detectProvider } from '@/lib/aiCall';
 
 const SYSTEM_PROMPT = `You are a skill builder assistant. Your job is to create precise, powerful AI skill instructions — system-level directives that work as system prompts in any LLM (Claude, ChatGPT, Cursor, Copilot, etc.).
 
@@ -33,41 +34,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'messages array is required' }, { status: 400 });
     }
 
-    const apiKey = (process.env.ANTHROPIC_API_KEY ?? '').trim();
-    if (!apiKey) {
-      return NextResponse.json({ error: 'Configure ANTHROPIC_API_KEY in .env.local' }, { status: 503 });
+    if (!detectProvider()) {
+      return NextResponse.json(
+        { error: 'No API key configured. Add ANTHROPIC_API_KEY, GOOGLE_AI_API_KEY, or PERPLEXITY_API_KEY to .env.local' },
+        { status: 503 }
+      );
     }
 
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-5-20250514',
-        max_tokens: 600,
-        system: SYSTEM_PROMPT,
-        messages,
-      }),
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      const msg = (err as { error?: { message?: string } }).error?.message || res.statusText;
-      return NextResponse.json({ error: msg }, { status: res.status });
-    }
-
-    const data = (await res.json()) as { content?: { text?: string }[] };
-    const raw = data.content?.[0]?.text?.trim();
-    if (!raw) return NextResponse.json({ error: 'Empty response' }, { status: 500 });
+    const raw = await callAI(SYSTEM_PROMPT, messages, 600);
 
     // Extract JSON even if the model wraps it in a code block
     const jsonMatch = raw.match(/\{[\s\S]*\}/);
     if (!jsonMatch) return NextResponse.json({ error: 'Unexpected response format', raw }, { status: 500 });
 
-    const parsed = JSON.parse(jsonMatch[0]) as { type: string; message?: string; name?: string; category?: string; icon?: string; description?: string; instruction?: string };
+    const parsed = JSON.parse(jsonMatch[0]) as {
+      type: string;
+      message?: string;
+      name?: string;
+      category?: string;
+      icon?: string;
+      description?: string;
+      instruction?: string;
+    };
     return NextResponse.json(parsed);
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Generation failed';

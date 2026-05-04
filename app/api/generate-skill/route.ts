@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { callAI, detectProvider } from '@/lib/aiCall';
 
 const SYSTEM_PROMPT = `You are a prompt engineering expert. Your job is to write a concise, powerful "skill instruction" — a system-level directive that tells an AI exactly how to behave when this skill is active.
 
@@ -21,9 +22,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Describe what you want the skill to do.' }, { status: 400 });
     }
 
-    const apiKey = (process.env.ANTHROPIC_API_KEY ?? '').trim();
-    if (!apiKey) {
-      return NextResponse.json({ error: 'Configure ANTHROPIC_API_KEY in .env.local' }, { status: 503 });
+    if (!detectProvider()) {
+      return NextResponse.json(
+        { error: 'No API key configured. Add ANTHROPIC_API_KEY, GOOGLE_AI_API_KEY, or PERPLEXITY_API_KEY to .env.local' },
+        { status: 503 }
+      );
     }
 
     const userMessage = `Write a skill instruction for:
@@ -33,33 +36,7 @@ Goal: ${goal.trim()}
 
 Return ONLY the instruction text. No labels, no preamble, no surrounding quotes.`;
 
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-5-20250514',
-        max_tokens: 300,
-        system: SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: userMessage }],
-      }),
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      const msg = (err as { error?: { message?: string } }).error?.message || res.statusText;
-      return NextResponse.json({ error: msg }, { status: res.status });
-    }
-
-    const data = (await res.json()) as { content?: { text?: string }[] };
-    const instruction = data.content?.[0]?.text?.trim();
-    if (!instruction) {
-      return NextResponse.json({ error: 'Empty response from AI' }, { status: 500 });
-    }
-
+    const instruction = await callAI(SYSTEM_PROMPT, [{ role: 'user', content: userMessage }], 300);
     return NextResponse.json({ instruction });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Generation failed';
